@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, ClipboardList, FileText, Info, Printer, Download, Search, X, LayoutGrid, LayoutList, LayoutDashboard } from "lucide-react";
+import { Check, ClipboardList, FileText, Info, Printer, Download, Search, X } from "lucide-react";
 import { Protocol } from "@/types/protocol";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { generatePDF } from "@/utils/generatePDF";
 import { v4 as uuidv4 } from 'uuid';
 
-type ViewMode = "card" | "table" | "list";
-
 const Protocols = () => {
   const navigate = useNavigate();
   const [showUserDetails, setShowUserDetails] = useState(false);
@@ -22,8 +20,6 @@ const Protocols = () => {
   const [showNewProtocolForm, setShowNewProtocolForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
-
-  const [viewMode, setViewMode] = useState<ViewMode>("card");
   
   const [newProtocol, setNewProtocol] = useState<Omit<Protocol, "id" | "createdAt">>({
     name: "",
@@ -122,6 +118,7 @@ const Protocols = () => {
         </body>
       </html>
     `;
+    
     const printWindow = window.open('', '_blank');
     printWindow?.document.write(printContent);
     printWindow?.document.close();
@@ -163,224 +160,11 @@ const Protocols = () => {
     protocol.subject.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const renderProtocolsAsCards = () => (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {filteredProtocols.length > 0 ? (
-        filteredProtocols.map((protocol) => (
-          <Card key={protocol.id} className="overflow-hidden">
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-lg">
-                  #{protocol.id.substring(0, 8)}
-                </CardTitle>
-                <Badge className={getStatusColor(protocol.status)}>
-                  {getStatusLabel(protocol.status)}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 mb-4">
-                <div className="text-sm">
-                  <span className="font-medium">Nome:</span> {protocol.name}
-                </div>
-                <div className="text-sm">
-                  <span className="font-medium">Assunto:</span> {protocol.subject}
-                </div>
-                <div className="text-sm">
-                  <span className="font-medium">Data:</span>{" "}
-                  {new Date(protocol.createdAt).toLocaleDateString()}
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openProtocolDetails(protocol)}
-                >
-                  <Info className="h-4 w-4 mr-1" />
-                  Detalhes
-                </Button>
-                <div className="flex space-x-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handlePrint(protocol)}
-                  >
-                    <Printer className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleGeneratePDF(protocol)}
-                  >
-                    <FileText className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))
-      ) : (
-        <div className="col-span-full text-center py-10 text-gray-500">
-          {searchQuery ? "Nenhum protocolo encontrado para esta busca." : "Nenhum protocolo registrado ainda."}
-        </div>
-      )}
-    </div>
-  );
-
-  const renderProtocolsAsTable = () => (
-    <div className="overflow-x-auto">
-      <table className="min-w-full bg-white rounded-md shadow-sm border">
-        <thead>
-          <tr>
-            <th className="py-2 px-3 border-b text-left">#</th>
-            <th className="py-2 px-3 border-b text-left">Nome</th>
-            <th className="py-2 px-3 border-b text-left">Assunto</th>
-            <th className="py-2 px-3 border-b text-left">Data</th>
-            <th className="py-2 px-3 border-b text-left">Status</th>
-            <th className="py-2 px-3 border-b text-left">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredProtocols.length > 0 ? (
-            filteredProtocols.map((protocol) => (
-              <tr key={protocol.id} className="hover:bg-gray-50 transition">
-                <td className="py-2 px-3 border-b">#{protocol.id.substring(0,8)}</td>
-                <td className="py-2 px-3 border-b">{protocol.name}</td>
-                <td className="py-2 px-3 border-b">{protocol.subject}</td>
-                <td className="py-2 px-3 border-b">{new Date(protocol.createdAt).toLocaleDateString()}</td>
-                <td className="py-2 px-3 border-b">
-                  <Badge className={getStatusColor(protocol.status)}>
-                    {getStatusLabel(protocol.status)}
-                  </Badge>
-                </td>
-                <td className="py-2 px-3 border-b">
-                  <div className="flex gap-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openProtocolDetails(protocol)}
-                    >
-                      <Info className="h-4 w-4 mr-1" />
-                      Detalhes
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handlePrint(protocol)}
-                    >
-                      <Printer className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleGeneratePDF(protocol)}
-                    >
-                      <FileText className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td className="text-center text-gray-500 py-6" colSpan={6}>
-                {searchQuery ? "Nenhum protocolo encontrado para esta busca." : "Nenhum protocolo registrado ainda."}
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
-
-  const renderProtocolsAsList = () => (
-    <ul className="space-y-3">
-      {filteredProtocols.length > 0 ? (
-        filteredProtocols.map((protocol) => (
-          <li
-            key={protocol.id}
-            className="border rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white shadow"
-          >
-            <div className="flex-1">
-              <div className="font-medium">#{protocol.id.substring(0, 8)} - {protocol.name}</div>
-              <div className="text-sm text-gray-500">
-                {protocol.subject} &middot; {new Date(protocol.createdAt).toLocaleDateString()}
-              </div>
-              <div className="mt-1">
-                <Badge className={getStatusColor(protocol.status)}>
-                  {getStatusLabel(protocol.status)}
-                </Badge>
-              </div>
-            </div>
-            <div className="flex gap-1 mt-3 sm:mt-0 sm:ml-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => openProtocolDetails(protocol)}
-              >
-                <Info className="h-4 w-4 mr-1" />
-                Detalhes
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handlePrint(protocol)}
-              >
-                <Printer className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleGeneratePDF(protocol)}
-              >
-                <FileText className="h-4 w-4" />
-              </Button>
-            </div>
-          </li>
-        ))
-      ) : (
-        <li className="text-center text-gray-500 py-10">
-          {searchQuery ? "Nenhum protocolo encontrado para esta busca." : "Nenhum protocolo registrado ainda."}
-        </li>
-      )}
-    </ul>
-  );
-
   return (
     <div className="container mx-auto py-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Protocolos</h1>
-        <div className="flex gap-2">
-          <Button
-            variant={viewMode === "card" ? "default" : "outline"}
-            size="icon"
-            onClick={() => setViewMode("card")}
-            aria-label="Exibir cartões"
-            className={viewMode === "card" ? "bg-brand-blue text-white" : ""}
-          >
-            <LayoutGrid />
-          </Button>
-          <Button
-            variant={viewMode === "table" ? "default" : "outline"}
-            size="icon"
-            onClick={() => setViewMode("table")}
-            aria-label="Exibir tabela"
-            className={viewMode === "table" ? "bg-brand-blue text-white" : ""}
-          >
-            <LayoutDashboard />
-          </Button>
-          <Button
-            variant={viewMode === "list" ? "default" : "outline"}
-            size="icon"
-            onClick={() => setViewMode("list")}
-            aria-label="Exibir lista"
-            className={viewMode === "list" ? "bg-brand-blue text-white" : ""}
-          >
-            <LayoutList />
-          </Button>
-          <Button onClick={() => setShowNewProtocolForm(true)}>Novo Protocolo</Button>
-        </div>
+        <Button onClick={() => setShowNewProtocolForm(true)}>Novo Protocolo</Button>
       </div>
 
       <div className="mb-6">
@@ -396,9 +180,68 @@ const Protocols = () => {
         </div>
       </div>
 
-      {viewMode === "card" && renderProtocolsAsCards()}
-      {viewMode === "table" && renderProtocolsAsTable()}
-      {viewMode === "list" && renderProtocolsAsList()}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {filteredProtocols.length > 0 ? (
+          filteredProtocols.map((protocol) => (
+            <Card key={protocol.id} className="overflow-hidden">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-lg">
+                    #{protocol.id.substring(0, 8)}
+                  </CardTitle>
+                  <Badge className={getStatusColor(protocol.status)}>
+                    {getStatusLabel(protocol.status)}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 mb-4">
+                  <div className="text-sm">
+                    <span className="font-medium">Nome:</span> {protocol.name}
+                  </div>
+                  <div className="text-sm">
+                    <span className="font-medium">Assunto:</span> {protocol.subject}
+                  </div>
+                  <div className="text-sm">
+                    <span className="font-medium">Data:</span>{" "}
+                    {new Date(protocol.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openProtocolDetails(protocol)}
+                  >
+                    <Info className="h-4 w-4 mr-1" />
+                    Detalhes
+                  </Button>
+                  <div className="flex space-x-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handlePrint(protocol)}
+                    >
+                      <Printer className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleGeneratePDF(protocol)}
+                    >
+                      <FileText className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-full text-center py-10 text-gray-500">
+            {searchQuery ? "Nenhum protocolo encontrado para esta busca." : "Nenhum protocolo registrado ainda."}
+          </div>
+        )}
+      </div>
 
       <Dialog open={showUserDetails} onOpenChange={setShowUserDetails}>
         <DialogContent className="max-w-md">

@@ -7,6 +7,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LogIn, Loader } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+const LOGIN_INFOS = [
+  { label: "E-mail", value: "admin@example.com" },
+  { label: "Senha", value: "Qualquer senha com 6+ caracteres" },
+];
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -60,7 +65,7 @@ const Login = () => {
               </Link>
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col gap-4 pb-6 pt-0">
+          <CardFooter className="flex flex-col gap-4 pb-2 pt-0">
             <Button
               type="submit"
               className="w-full h-12 text-base font-semibold rounded-lg flex items-center justify-center gap-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-blue"
@@ -89,9 +94,24 @@ const Login = () => {
             </p>
           </CardFooter>
         </form>
+        {/* Dados de login padrão */}
+        <div className="p-4">
+          <div className="bg-gray-100 rounded-md px-4 py-3 text-sm">
+            <span className="font-semibold text-gray-800 block mb-2">Acesso Demo:</span>
+            <ul className="space-y-1">
+              {LOGIN_INFOS.map(({ label, value }) => (
+                <li key={label} className="flex items-center gap-2">
+                  <span className="text-brand-blue">{label}:</span>
+                  <span>{value}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </Card>
     </div>
   );
 };
 
 export default Login;
+

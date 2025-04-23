@@ -365,7 +365,7 @@ const Protocols = () => {
   };
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="container mx-auto py-6 animate-fade-in">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Protocolos</h1>
         <Button onClick={() => setShowNewProtocolForm(true)}>Novo Protocolo</Button>

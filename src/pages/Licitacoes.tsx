@@ -18,7 +18,7 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { FileText, Search, Plus, Download, Trash } from "lucide-react";
+import { FileText, Search, Plus, Download, Trash, Edit } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -236,6 +236,11 @@ const Licitacoes = () => {
     });
   };
 
+  const handleEditContract = (contract: Contrato) => {
+    setSelectedContract(contract);
+    setOpenDialogContrato(true);
+  };
+
   const handleContractClick = (contract: Contrato) => {
     setSelectedContract(contract);
     setOpenContractDialog(true);
@@ -400,9 +405,25 @@ const Licitacoes = () => {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon" onClick={() => excluirContrato(contrato.id)}>
-                          <Trash className="h-4 w-4" />
-                        </Button>
+                        <div className="flex space-x-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditContract(contrato);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => excluirContrato(contrato.id)}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

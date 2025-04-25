@@ -131,36 +131,69 @@ const Licitacoes = () => {
     });
   };
 
+  const handleEditContract = (contract: Contrato) => {
+    setSelectedContract(contract);
+    setNovoContrato({
+      numero: contract.numero,
+      empresa: contract.empresa,
+      objeto: contract.objeto,
+      valor: contract.valor,
+      dataInicio: contract.dataInicio,
+      dataFim: contract.dataFim
+    });
+    setOpenDialogContrato(true);
+  };
+
   const handleContratoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!novoContrato.numero || !novoContrato.empresa || !novoContrato.objeto || 
         !novoContrato.valor || !novoContrato.dataInicio || !novoContrato.dataFim) {
       toast({
-        title: "Erro ao adicionar contrato",
+        title: "Erro ao salvar contrato",
         description: "Por favor, preencha todos os campos obrigatórios.",
         variant: "destructive"
       });
       return;
     }
 
-    const newContrato: Contrato = {
-      id: Date.now().toString(),
-      numero: novoContrato.numero!,
-      empresa: novoContrato.empresa!,
-      objeto: novoContrato.objeto!,
-      valor: novoContrato.valor!,
-      dataInicio: novoContrato.dataInicio!,
-      dataFim: novoContrato.dataFim!,
-      status: "Vigente"
-    };
+    if (selectedContract) {
+      const updatedContratos = contratos.map(contrato => 
+        contrato.id === selectedContract.id ? {
+          ...contrato,
+          numero: novoContrato.numero!,
+          empresa: novoContrato.empresa!,
+          objeto: novoContrato.objeto!,
+          valor: novoContrato.valor!,
+          dataInicio: novoContrato.dataInicio!,
+          dataFim: novoContrato.dataFim!
+        } : contrato
+      );
+      setContratos(updatedContratos);
+      toast({
+        title: "Contrato atualizado",
+        description: `Contrato ${novoContrato.numero} atualizado com sucesso.`
+      });
+    } else {
+      const newContrato: Contrato = {
+        id: Date.now().toString(),
+        numero: novoContrato.numero!,
+        empresa: novoContrato.empresa!,
+        objeto: novoContrato.objeto!,
+        valor: novoContrato.valor!,
+        dataInicio: novoContrato.dataInicio!,
+        dataFim: novoContrato.dataFim!,
+        status: "Vigente"
+      };
+      setContratos([...contratos, newContrato]);
+      toast({
+        title: "Contrato adicionado",
+        description: `Contrato ${newContrato.numero} adicionado com sucesso.`
+      });
+    }
 
-    setContratos([...contratos, newContrato]);
     setNovoContrato({});
+    setSelectedContract(null);
     setOpenDialogContrato(false);
-    toast({
-      title: "Contrato adicionado",
-      description: `Contrato ${newContrato.numero} adicionado com sucesso.`
-    });
   };
 
   const formatCurrency = (value: number) => {
@@ -236,11 +269,6 @@ const Licitacoes = () => {
     });
   };
 
-  const handleEditContract = (contract: Contrato) => {
-    setSelectedContract(contract);
-    setOpenDialogContrato(true);
-  };
-
   const handleContractClick = (contract: Contrato) => {
     setSelectedContract(contract);
     setOpenContractDialog(true);
@@ -282,7 +310,9 @@ const Licitacoes = () => {
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[550px]">
                     <DialogHeader>
-                      <DialogTitle>Adicionar Novo Contrato</DialogTitle>
+                      <DialogTitle>
+                        {selectedContract ? "Editar Contrato" : "Adicionar Novo Contrato"}
+                      </DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleContratoSubmit} className="grid gap-4 py-4">
                       <div className="grid grid-cols-2 gap-4">
@@ -346,7 +376,9 @@ const Licitacoes = () => {
                           />
                         </div>
                       </div>
-                      <Button type="submit" className="mt-4">Adicionar Contrato</Button>
+                      <Button type="submit" className="mt-4">
+                        {selectedContract ? "Salvar Alterações" : "Adicionar Contrato"}
+                      </Button>
                     </form>
                   </DialogContent>
                 </Dialog>

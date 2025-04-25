@@ -15,6 +15,8 @@ import { EmployeeProvider } from "./contexts/EmployeeContext";
 import Profile from "./pages/Profile";
 import Protocols from "./pages/Protocols";
 import SalarySimulator from "./pages/SalarySimulator";
+import Licitacoes from "./pages/Licitacoes";
+import Compras from "./pages/Compras";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +38,8 @@ const App = () => (
                 <Route path="employees" element={<EmployeesList />} />
                 <Route path="employees/new" element={<EmployeeForm />} />
                 <Route path="protocols" element={<Protocols />} />
+                <Route path="licitacoes" element={<Licitacoes />} />
+                <Route path="compras" element={<Compras />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="salary-simulator" element={<SalarySimulator />} />
               </Route>

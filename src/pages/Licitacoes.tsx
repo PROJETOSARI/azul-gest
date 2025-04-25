@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -451,7 +452,10 @@ const Licitacoes = () => {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            onClick={() => excluirContrato(contrato.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              excluirContrato(contrato.id);
+                            }}
                           >
                             <Trash className="h-4 w-4" />
                           </Button>

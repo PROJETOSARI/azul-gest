@@ -1,9 +1,9 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { LogOut, User, Calculator, Users, ClipboardList, FileText, ShoppingCart } from 'lucide-react';
 import { Link, useLocation, Navigate, useNavigate, Outlet } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
+import Footer from './Footer';
 
 const DashboardLayout = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -12,7 +12,6 @@ const DashboardLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   
-  // Effect to handle body overflow when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -68,7 +67,6 @@ const DashboardLayout = () => {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Mobile menu button */}
       <div className="lg:hidden fixed top-4 left-4 z-30">
         <Button
           variant="outline"
@@ -93,7 +91,6 @@ const DashboardLayout = () => {
         </Button>
       </div>
 
-      {/* Sidebar */}
       <div 
         className={`fixed inset-y-0 left-0 transform lg:relative lg:translate-x-0 z-20
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -104,7 +101,6 @@ const DashboardLayout = () => {
         onMouseLeave={() => setIsHovering(false)}
       >
         <div className="flex flex-col h-full">
-          {/* Logo Section */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex justify-center items-center">
               <img
@@ -115,7 +111,6 @@ const DashboardLayout = () => {
             </div>
           </div>
 
-          {/* User Profile Section */}
           <div 
             onClick={() => {
               navigate('/dashboard/profile');
@@ -134,7 +129,6 @@ const DashboardLayout = () => {
             </div>
           </div>
 
-          {/* Navigation Menu */}
           <nav className="flex-1 px-2 py-4 space-y-1">
             {menuItems.map((item) => {
               const isActive = location.pathname === item.path;
@@ -156,7 +150,6 @@ const DashboardLayout = () => {
             })}
           </nav>
 
-          {/* Logout Button */}
           <div className="p-4 border-t border-gray-200">
             <Button
               variant="outline"
@@ -173,9 +166,7 @@ const DashboardLayout = () => {
         </div>
       </div>
 
-      {/* Main Content with overlay */}
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isHovering ? 'lg:ml-64' : 'lg:ml-20'}`}>
-        {/* Mobile menu overlay */}
         {isMobileMenuOpen && (
           <div 
             className="fixed inset-0 bg-black bg-opacity-50 z-10 lg:hidden"
@@ -186,6 +177,8 @@ const DashboardLayout = () => {
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-6">
           <Outlet />
         </main>
+        
+        <Footer />
       </div>
     </div>
   );

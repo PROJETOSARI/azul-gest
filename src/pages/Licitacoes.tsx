@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,7 @@ import { FileText, Search, Plus, Download, Trash } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { generateContractPDF } from '@/utils/generateContractPDF';
 
 interface Contrato {
   id: string;
@@ -113,10 +113,10 @@ const Licitacoes = () => {
   const [novoRelatorio, setNovoRelatorio] = useState<Partial<Relatorio>>({});
   const [openDialogContrato, setOpenDialogContrato] = useState(false);
   const [openDialogRelatorio, setOpenDialogRelatorio] = useState(false);
-  
+  const [selectedContract, setSelectedContract] = useState<Contrato | null>(null);
+  const [openContractDialog, setOpenContractDialog] = useState(false);
   const { toast } = useToast();
 
-  // Funções para contratos
   const filteredContratos = contratos.filter(contrato => 
     contrato.numero.toLowerCase().includes(searchContrato.toLowerCase()) || 
     contrato.empresa.toLowerCase().includes(searchContrato.toLowerCase()) ||
@@ -171,7 +171,6 @@ const Licitacoes = () => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
-  // Funções para relatórios
   const filteredRelatorios = relatorios.filter(relatorio => 
     relatorio.titulo.toLowerCase().includes(searchRelatorio.toLowerCase()) || 
     relatorio.tipo.toLowerCase().includes(searchRelatorio.toLowerCase())
@@ -237,6 +236,19 @@ const Licitacoes = () => {
     });
   };
 
+  const handleContractClick = (contract: Contrato) => {
+    setSelectedContract(contract);
+    setOpenContractDialog(true);
+  };
+
+  const handleDownloadContract = (contract: Contrato) => {
+    generateContractPDF(contract);
+    toast({
+      title: "Download iniciado",
+      description: `Baixando contrato ${contract.numero}...`
+    });
+  };
+
   return (
     <div className="container mx-auto py-6 animate-fade-in">
       <h1 className="text-2xl font-bold mb-6">Licitações</h1>
@@ -247,7 +259,6 @@ const Licitacoes = () => {
           <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
         </TabsList>
         
-        {/* Aba de Contratos */}
         <TabsContent value="contratos">
           <Card>
             <CardHeader>
@@ -364,7 +375,11 @@ const Licitacoes = () => {
                 </TableHeader>
                 <TableBody>
                   {filteredContratos.map((contrato) => (
-                    <TableRow key={contrato.id}>
+                    <TableRow 
+                      key={contrato.id}
+                      className="cursor-pointer"
+                      onClick={() => handleContractClick(contrato)}
+                    >
                       <TableCell>{contrato.numero}</TableCell>
                       <TableCell>{contrato.empresa}</TableCell>
                       <TableCell>{contrato.objeto}</TableCell>
@@ -395,9 +410,69 @@ const Licitacoes = () => {
               </Table>
             </CardContent>
           </Card>
+
+          <Dialog open={openContractDialog} onOpenChange={setOpenContractDialog}>
+            <DialogContent className="sm:max-w-[600px]">
+              {selectedContract && (
+                <>
+                  <DialogHeader>
+                    <DialogTitle>Detalhes do Contrato #{selectedContract.numero}</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="font-medium text-gray-500">Empresa</h3>
+                        <p className="text-lg">{selectedContract.empresa}</p>
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-500">Objeto</h3>
+                        <p className="text-lg">{selectedContract.objeto}</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <h3 className="font-medium text-gray-500">Valor</h3>
+                          <p className="text-lg">{formatCurrency(selectedContract.valor)}</p>
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-gray-500">Status</h3>
+                          <span
+                            className={`inline-block px-2 py-1 rounded-full text-sm font-medium ${
+                              selectedContract.status === "Vigente"
+                                ? "bg-green-100 text-green-800"
+                                : selectedContract.status === "Finalizado"
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {selectedContract.status}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <h3 className="font-medium text-gray-500">Data de Início</h3>
+                          <p className="text-lg">{formatDate(selectedContract.dataInicio)}</p>
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-gray-500">Data de Término</h3>
+                          <p className="text-lg">{formatDate(selectedContract.dataFim)}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={() => handleDownloadContract(selectedContract)}
+                      className="mt-4"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Baixar Contrato
+                    </Button>
+                  </div>
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
         </TabsContent>
         
-        {/* Aba de Relatórios */}
         <TabsContent value="relatorios">
           <Card>
             <CardHeader>

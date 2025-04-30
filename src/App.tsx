@@ -17,6 +17,7 @@ import Protocols from "./pages/Protocols";
 import SalarySimulator from "./pages/SalarySimulator";
 import Licitacoes from "./pages/Licitacoes";
 import Compras from "./pages/Compras";
+import PreparingData from "./pages/PreparingData";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Login />} />
+              <Route path="/preparing" element={<PreparingData />} />
               
               {/* Dashboard Routes (Protected) */}
               <Route path="/dashboard" element={<DashboardLayout />}>

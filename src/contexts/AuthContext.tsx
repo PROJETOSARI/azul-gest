@@ -18,6 +18,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
+  isPreparing: boolean;
+  finishPreparation: () => void;
 }
 
 // Create context with default values
@@ -27,6 +29,8 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   logout: () => {},
   isLoading: false,
+  isPreparing: false,
+  finishPreparation: () => {},
 });
 
 // Hook to use the auth context
@@ -44,11 +48,18 @@ const MOCK_USER: User = {
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPreparing, setIsPreparing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   // Check if a user is logged in
   const isAuthenticated = !!user;
+  
+  // Function to finish preparation and navigate to dashboard
+  const finishPreparation = () => {
+    setIsPreparing(false);
+    navigate('/dashboard');
+  };
 
   // Mock login function
   const login = async (email: string, password: string) => {
@@ -71,22 +82,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         description: "Welcome back!",
       });
       
-      // Redirect to dashboard
-      navigate('/dashboard');
+      // Set preparing state instead of redirecting
+      setIsPreparing(true);
+      setIsLoading(false);
+      
+      // Redirect to preparing page
+      navigate('/preparing');
     } else {
       toast({
         variant: "destructive",
         title: "Login failed",
         description: "Invalid email or password.",
       });
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   // Logout function
   const logout = () => {
     setUser(null);
+    setIsPreparing(false);
     localStorage.removeItem('isLoggedIn');
     toast({
       title: "Logged out",
@@ -108,7 +123,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isAuthenticated, 
+      login, 
+      logout, 
+      isLoading, 
+      isPreparing,
+      finishPreparation
+    }}>
       {children}
     </AuthContext.Provider>
   );

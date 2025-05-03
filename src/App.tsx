@@ -18,6 +18,9 @@ import SalarySimulator from "./pages/SalarySimulator";
 import Licitacoes from "./pages/Licitacoes";
 import Compras from "./pages/Compras";
 import PreparingData from "./pages/PreparingData";
+import Almoxarifado from "./pages/Almoxarifado";
+import InventoryItemForm from "./pages/InventoryItemForm";
+import InventoryItemDetails from "./pages/InventoryItemDetails";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +47,12 @@ const App = () => (
                 <Route path="compras" element={<Compras />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="salary-simulator" element={<SalarySimulator />} />
+                
+                {/* Inventory Management Routes */}
+                <Route path="almoxarifado" element={<Almoxarifado />} />
+                <Route path="almoxarifado/new" element={<InventoryItemForm />} />
+                <Route path="almoxarifado/edit/:id" element={<InventoryItemForm />} />
+                <Route path="almoxarifado/item/:id" element={<InventoryItemDetails />} />
               </Route>
               
               {/* Fallback routes */}

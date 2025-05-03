@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -7,6 +8,8 @@ import { Calculator, Eye, Plus, Trash, User, FileText, FileSpreadsheet } from "l
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
+import { MotionPage, MotionCard, MotionTableContainer, MotionTableRow } from "@/components/animations/MotionContainer";
 
 const EmployeesList = () => {
   const { employees, deleteEmployee, calculateSalaryDeductions } = useEmployees();
@@ -55,8 +58,13 @@ const EmployeesList = () => {
   };
 
   return (
-    <div className="animate-fade-in">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <MotionPage>
+      <motion.div
+        initial={{ y: 30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col md:flex-row md:items-center md:justify-between mb-6"
+      >
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Funcionários</h1>
           <p className="text-gray-600">Gerencie os funcionários da empresa</p>
@@ -67,108 +75,119 @@ const EmployeesList = () => {
             Novo Funcionário
           </Button>
         </Link>
-      </div>
+      </motion.div>
 
-      <Card className="mb-6">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle>Filtros</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="w-full">
-            <Input
-              placeholder="Buscar por nome, cargo ou departamento..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <MotionCard delay={0.2}>
+        <Card className="mb-6">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle>Filtros</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="w-full">
+              <Input
+                placeholder="Buscar por nome, cargo ou departamento..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </MotionCard>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle>Lista de Funcionários</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {filteredEmployees.length === 0 ? (
-            <div className="text-center py-8">
-              <User className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-              <h3 className="text-lg font-medium text-gray-900">Nenhum funcionário encontrado</h3>
-              <p className="text-gray-500 mb-6">
-                {searchTerm 
-                  ? "Tente mudar os termos da busca ou limpar os filtros." 
-                  : "Cadastre um novo funcionário para vê-lo aqui."}
-              </p>
-              {searchTerm && (
-                <Button variant="outline" onClick={() => setSearchTerm("")}>
-                  Limpar Filtros
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="overflow-x-auto rounded-md border">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50 border-b">
-                    <th className="py-3 px-4 text-left font-medium text-gray-500">Nome</th>
-                    <th className="py-3 px-4 text-left font-medium text-gray-500 hidden md:table-cell">Cargo</th>
-                    <th className="py-3 px-4 text-left font-medium text-gray-500 hidden lg:table-cell">Departamento</th>
-                    <th className="py-3 px-4 text-center font-medium text-gray-500 hidden md:table-cell">Contrato</th>
-                    <th className="py-3 px-4 text-right font-medium text-gray-500">Salário</th>
-                    <th className="py-3 px-4 text-center font-medium text-gray-500">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredEmployees.map((employee) => (
-                    <tr key={employee.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4">
-                        <div className="font-medium">{employee.name}</div>
-                        <div className="text-gray-500 text-xs md:hidden">{employee.role}</div>
-                      </td>
-                      <td className="py-3 px-4 text-gray-600 hidden md:table-cell">
-                        {employee.role}
-                      </td>
-                      <td className="py-3 px-4 text-gray-600 hidden lg:table-cell">
-                        {employee.department}
-                      </td>
-                      <td className="py-3 px-4 text-center hidden md:table-cell">
-                        <Badge variant="outline" className={getContractTypeColor(employee.contractType)}>
-                          {employee.contractType}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        {formatCurrency(employee.salary)}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center justify-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => openDetails(employee)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8 text-red-600"
-                            onClick={() => deleteEmployee(employee.id)}
-                          >
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <MotionCard delay={0.4}>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle>Lista de Funcionários</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {filteredEmployees.length === 0 ? (
+              <motion.div 
+                className="text-center py-8"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <User className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                <h3 className="text-lg font-medium text-gray-900">Nenhum funcionário encontrado</h3>
+                <p className="text-gray-500 mb-6">
+                  {searchTerm 
+                    ? "Tente mudar os termos da busca ou limpar os filtros." 
+                    : "Cadastre um novo funcionário para vê-lo aqui."}
+                </p>
+                {searchTerm && (
+                  <Button variant="outline" onClick={() => setSearchTerm("")}>
+                    Limpar Filtros
+                  </Button>
+                )}
+              </motion.div>
+            ) : (
+              <MotionTableContainer>
+                <div className="overflow-x-auto rounded-md border">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 border-b">
+                        <th className="py-3 px-4 text-left font-medium text-gray-500">Nome</th>
+                        <th className="py-3 px-4 text-left font-medium text-gray-500 hidden md:table-cell">Cargo</th>
+                        <th className="py-3 px-4 text-left font-medium text-gray-500 hidden lg:table-cell">Departamento</th>
+                        <th className="py-3 px-4 text-center font-medium text-gray-500 hidden md:table-cell">Contrato</th>
+                        <th className="py-3 px-4 text-right font-medium text-gray-500">Salário</th>
+                        <th className="py-3 px-4 text-center font-medium text-gray-500">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredEmployees.map((employee, index) => (
+                        <MotionTableRow key={employee.id} index={index}>
+                          <td className="py-3 px-4">
+                            <div className="font-medium">{employee.name}</div>
+                            <div className="text-gray-500 text-xs md:hidden">{employee.role}</div>
+                          </td>
+                          <td className="py-3 px-4 text-gray-600 hidden md:table-cell">
+                            {employee.role}
+                          </td>
+                          <td className="py-3 px-4 text-gray-600 hidden lg:table-cell">
+                            {employee.department}
+                          </td>
+                          <td className="py-3 px-4 text-center hidden md:table-cell">
+                            <Badge variant="outline" className={getContractTypeColor(employee.contractType)}>
+                              {employee.contractType}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            {formatCurrency(employee.salary)}
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center justify-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => openDetails(employee)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8 text-red-600"
+                                onClick={() => deleteEmployee(employee.id)}
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </MotionTableRow>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </MotionTableContainer>
+            )}
+          </CardContent>
+        </Card>
+      </MotionCard>
 
       {/* Employee Details Dialog */}
       {selectedEmployee && (
@@ -201,11 +220,21 @@ const EmployeesList = () => {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="grid gap-4 py-4">
+            <motion.div 
+              className="grid gap-4 py-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
               <div className="flex justify-center mb-4">
-                <div className="h-20 w-20 rounded-full bg-brand-blue text-white flex items-center justify-center text-xl font-bold">
+                <motion.div 
+                  className="h-20 w-20 rounded-full bg-brand-blue text-white flex items-center justify-center text-xl font-bold"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                >
                   {selectedEmployee.name.split(' ').map(part => part[0]).join('').substring(0, 2).toUpperCase()}
-                </div>
+                </motion.div>
               </div>
 
               <div className="text-center mb-4">
@@ -237,7 +266,12 @@ const EmployeesList = () => {
               </div>
               
               <div className="mt-2">
-                <div className="bg-gray-50 p-4 rounded-md">
+                <motion.div 
+                  className="bg-gray-50 p-4 rounded-md"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2, duration: 0.3 }}
+                >
                   <div className="flex items-center mb-3">
                     <Calculator className="h-5 w-5 mr-2 text-brand-blue" />
                     <div className="font-semibold">Cálculo de Salário</div>
@@ -266,13 +300,13 @@ const EmployeesList = () => {
                       </div>
                     );
                   })()}
-                </div>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
           </DialogContent>
         </Dialog>
       )}
-    </div>
+    </MotionPage>
   );
 };
 

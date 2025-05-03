@@ -5,6 +5,7 @@ import { LogOut, User, Calculator, Users, ClipboardList, FileText, ShoppingCart,
 import { Link, useLocation, Navigate, useNavigate, Outlet } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import Footer from './Footer';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const DashboardLayout = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -73,7 +74,12 @@ const DashboardLayout = () => {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Back arrow button */}
-      <div className="fixed top-4 left-16 z-30 lg:left-24">
+      <motion.div 
+        className="fixed top-4 left-16 z-30 lg:left-24"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+      >
         <Button
           variant="outline"
           size="icon"
@@ -82,9 +88,14 @@ const DashboardLayout = () => {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-      </div>
+      </motion.div>
 
-      <div className="lg:hidden fixed top-4 left-4 z-30">
+      <motion.div 
+        className="lg:hidden fixed top-4 left-4 z-30"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+      >
         <Button
           variant="outline"
           size="icon"
@@ -106,9 +117,9 @@ const DashboardLayout = () => {
             />
           </svg>
         </Button>
-      </div>
+      </motion.div>
 
-      <div 
+      <motion.div 
         className={`fixed inset-y-0 left-0 transform lg:relative lg:translate-x-0 z-50
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           ${isHovering ? 'lg:w-64' : 'lg:w-20'}
@@ -116,9 +127,17 @@ const DashboardLayout = () => {
           bg-white border-r border-gray-200 shadow-sm`}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
+        initial={{ x: -100 }}
+        animate={{ x: 0 }}
+        transition={{ duration: 0.3 }}
       >
         <div className="flex flex-col h-full">
-          <div className="p-4 border-b border-gray-200">
+          <motion.div 
+            className="p-4 border-b border-gray-200"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+          >
             <div className="flex justify-center items-center">
               <img
                 src="/placeholder.svg"
@@ -126,14 +145,17 @@ const DashboardLayout = () => {
                 className="h-12 w-auto"
               />
             </div>
-          </div>
+          </motion.div>
 
-          <div 
+          <motion.div 
             onClick={() => {
               navigate('/dashboard/profile');
               setIsMobileMenuOpen(false);
             }}
             className="px-4 py-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.3 }}
           >
             <div className="flex items-center">
               <div className="flex-shrink-0 h-10 w-10 rounded-full bg-brand-blue flex items-center justify-center text-white">
@@ -144,30 +166,41 @@ const DashboardLayout = () => {
                 <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           <nav className="flex-1 px-2 py-4 space-y-1">
-            {menuItems.map((item) => {
+            {menuItems.map((item, index) => {
               const isActive = location.pathname === item.path;
               return (
-                <Link
+                <motion.div
                   key={item.path}
-                  to={item.path}
-                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors
-                    ${isActive
-                      ? 'bg-brand-blue text-white'
-                      : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + index * 0.05, duration: 0.3 }}
                 >
-                  <span className="mr-3">{item.icon}</span>
-                  <span className={`${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>{item.name}</span>
-                </Link>
+                  <Link
+                    to={item.path}
+                    className={`flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors
+                      ${isActive
+                        ? 'bg-brand-blue text-white'
+                        : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <span className="mr-3">{item.icon}</span>
+                    <span className={`${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>{item.name}</span>
+                  </Link>
+                </motion.div>
               );
             })}
           </nav>
 
-          <div className="p-4 border-t border-gray-200">
+          <motion.div 
+            className="p-4 border-t border-gray-200"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.3 }}
+          >
             <Button
               variant="outline"
               onClick={() => {
@@ -179,20 +212,35 @@ const DashboardLayout = () => {
               <LogOut size={16} />
               <span className={`${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>Sair</span>
             </Button>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isHovering ? 'lg:ml-64' : 'lg:ml-20'}`}>
         {isMobileMenuOpen && (
-          <div 
+          <motion.div 
             className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             onClick={toggleMobileMenu}
           />
         )}
         
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-6">
-          <Outlet />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="min-h-[calc(100vh-150px)]"
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </main>
         
         <Footer />

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader } from 'lucide-react';
+import { Loader, CheckCircle } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -42,7 +42,11 @@ const PreparingData = () => {
         <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg animate-fade-in">
           <div className="flex flex-col items-center justify-center space-y-6">
             <div className="p-6 rounded-full bg-blue-50">
-              <Loader className="h-12 w-12 animate-spin text-brand-blue" />
+              {loadingComplete ? (
+                <CheckCircle className="h-12 w-12 text-green-500 animate-scale-in" />
+              ) : (
+                <Loader className="h-12 w-12 animate-spin text-brand-blue" />
+              )}
             </div>
             
             <h1 className="text-2xl font-bold text-center text-gray-800">

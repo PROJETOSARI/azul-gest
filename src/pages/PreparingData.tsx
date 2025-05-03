@@ -5,11 +5,14 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader } from 'lucide-react';
 import Footer from '@/components/Footer';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const PreparingData = () => {
   const { finishPreparation } = useAuth();
   const [progress, setProgress] = useState(0);
   const [showButton, setShowButton] = useState(false);
+  const [loadingComplete, setLoadingComplete] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // Simulate loading progress
@@ -18,8 +21,11 @@ const PreparingData = () => {
         setProgress(prev => {
           const newProgress = prev + 2;
           if (newProgress >= 100) {
-            // When progress reaches 100%, show the button after a short delay
-            setTimeout(() => setShowButton(true), 500);
+            // When progress reaches 100%, show the button after a short delay and update message
+            setTimeout(() => {
+              setShowButton(true);
+              setLoadingComplete(true);
+            }, 500);
             return 100;
           }
           return newProgress;
@@ -40,7 +46,7 @@ const PreparingData = () => {
             </div>
             
             <h1 className="text-2xl font-bold text-center text-gray-800">
-              Quase pronto, estamos preparando os seus dados
+              {loadingComplete ? "Tudo Pronto" : "Quase pronto, estamos preparando os seus dados"}
             </h1>
             
             <div className="w-full space-y-2">

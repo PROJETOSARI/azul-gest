@@ -1,6 +1,7 @@
+
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
-import { LogOut, User, Calculator, Users, ClipboardList, FileText, ShoppingCart } from 'lucide-react';
+import { LogOut, User, Calculator, Users, ClipboardList, FileText, ShoppingCart, ArrowLeft } from 'lucide-react';
 import { Link, useLocation, Navigate, useNavigate, Outlet } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import Footer from './Footer';
@@ -27,6 +28,10 @@ const DashboardLayout = () => {
   if (!isAuthenticated) {
     return <Navigate to="/" />;
   }
+
+  const handleGoBack = () => {
+    navigate(-1);
+  };
 
   const menuItems = [
     {
@@ -67,6 +72,18 @@ const DashboardLayout = () => {
 
   return (
     <div className="flex h-screen bg-gray-100">
+      {/* Back arrow button */}
+      <div className="fixed top-4 left-16 z-30 lg:left-24">
+        <Button
+          variant="outline"
+          size="icon"
+          className="bg-white shadow-sm"
+          onClick={handleGoBack}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+      </div>
+
       <div className="lg:hidden fixed top-4 left-4 z-30">
         <Button
           variant="outline"
@@ -92,7 +109,7 @@ const DashboardLayout = () => {
       </div>
 
       <div 
-        className={`fixed inset-y-0 left-0 transform lg:relative lg:translate-x-0 z-20
+        className={`fixed inset-y-0 left-0 transform lg:relative lg:translate-x-0 z-50
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           ${isHovering ? 'lg:w-64' : 'lg:w-20'}
           transition-all duration-300 ease-in-out lg:flex lg:flex-col
@@ -169,7 +186,7 @@ const DashboardLayout = () => {
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isHovering ? 'lg:ml-64' : 'lg:ml-20'}`}>
         {isMobileMenuOpen && (
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-10 lg:hidden"
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
             onClick={toggleMobileMenu}
           />
         )}

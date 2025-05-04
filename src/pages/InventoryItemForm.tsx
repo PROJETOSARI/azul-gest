@@ -17,10 +17,11 @@ import { ArrowLeft, Save } from 'lucide-react';
 const formSchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
   category: z.string().min(1, "Selecione uma categoria"),
-  quantity: z.string().transform(val => parseInt(val, 10)),
+  quantity: z.coerce.number().min(0, "A quantidade não pode ser negativa"),
   unit: z.string().min(1, "Selecione uma unidade"),
-  minStock: z.string().transform(val => parseInt(val, 10)),
+  minStock: z.coerce.number().min(0, "O estoque mínimo não pode ser negativo"),
   location: z.string().min(1, "Informe a localização"),
+  department: z.string().min(1, "Selecione uma secretaria"),
   expirationDate: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -45,6 +46,19 @@ const units = [
   "Quilos"
 ];
 
+const departments = [
+  "Obras",
+  "Saúde",
+  "Meio Ambiente",
+  "Turismo",
+  "Educação",
+  "Administração",
+  "Assistência Social",
+  "Cultura",
+  "Esporte",
+  "Fazenda"
+];
+
 const InventoryItemForm = () => {
   const navigate = useNavigate();
   const isEditMode = false;
@@ -54,10 +68,11 @@ const InventoryItemForm = () => {
     defaultValues: {
       name: "",
       category: "",
-      quantity: "0",
+      quantity: 0,
       unit: "",
-      minStock: "0",
+      minStock: 0,
       location: "",
+      department: "",
       expirationDate: "",
       notes: "",
     },
@@ -137,6 +152,31 @@ const InventoryItemForm = () => {
                           {categories.map(category => (
                             <SelectItem key={category} value={category}>
                               {category}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="department"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Secretaria</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione uma secretaria" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {departments.map(department => (
+                            <SelectItem key={department} value={department}>
+                              {department}
                             </SelectItem>
                           ))}
                         </SelectContent>

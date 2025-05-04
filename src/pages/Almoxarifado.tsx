@@ -9,17 +9,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 interface InventoryItem {
   id: string;
   name: string;
   category: string;
+  department: string;
   quantity: number;
   unit: string;
   expirationDate: string | null;
   minStock: number;
   location: string;
   lastUpdated: string;
+  notes?: string;
 }
 
 const demoItems: InventoryItem[] = [
@@ -27,17 +30,20 @@ const demoItems: InventoryItem[] = [
     id: "1",
     name: "Papel A4",
     category: "Escritório",
+    department: "Administração",
     quantity: 500,
     unit: "Folhas",
     expirationDate: null,
     minStock: 100,
     location: "Armário A1",
-    lastUpdated: "2025-05-01"
+    lastUpdated: "2025-05-01",
+    notes: "Papel branco, gramatura 75g/m², tamanho A4 (210mm x 297mm)."
   },
   {
     id: "2",
     name: "Canetas Esferográficas",
     category: "Escritório",
+    department: "Educação",
     quantity: 150,
     unit: "Unidades",
     expirationDate: null,
@@ -49,6 +55,7 @@ const demoItems: InventoryItem[] = [
     id: "3",
     name: "Álcool em Gel",
     category: "Limpeza",
+    department: "Saúde",
     quantity: 20,
     unit: "Frascos",
     expirationDate: "2026-03-15",
@@ -60,6 +67,7 @@ const demoItems: InventoryItem[] = [
     id: "4",
     name: "Máscaras Descartáveis",
     category: "Médico",
+    department: "Saúde",
     quantity: 80,
     unit: "Unidades",
     expirationDate: "2025-12-31",
@@ -71,12 +79,49 @@ const demoItems: InventoryItem[] = [
     id: "5",
     name: "Cartuchos de Tinta",
     category: "Informática",
+    department: "Administração",
     quantity: 8,
     unit: "Unidades",
     expirationDate: "2025-11-01",
     minStock: 4,
     location: "Gaveta E5",
     lastUpdated: "2025-04-20"
+  },
+  {
+    id: "6",
+    name: "Cimento",
+    category: "Manutenção",
+    department: "Obras",
+    quantity: 25,
+    unit: "Pacotes",
+    expirationDate: "2025-10-15",
+    minStock: 10,
+    location: "Depósito F6",
+    lastUpdated: "2025-04-25"
+  },
+  {
+    id: "7",
+    name: "Folders Turísticos",
+    category: "Escritório",
+    department: "Turismo",
+    quantity: 500,
+    unit: "Unidades",
+    expirationDate: null,
+    minStock: 100,
+    location: "Armário G7",
+    lastUpdated: "2025-05-03"
+  },
+  {
+    id: "8",
+    name: "Sementes de Árvores",
+    category: "Manutenção",
+    department: "Meio Ambiente",
+    quantity: 300,
+    unit: "Pacotes",
+    expirationDate: "2026-05-01",
+    minStock: 50,
+    location: "Estante H8",
+    lastUpdated: "2025-04-10"
   }
 ];
 
@@ -84,24 +129,79 @@ const Almoxarifado = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState("todos");
+  const { toast } = useToast();
+  
+  const handleViewItem = (id: string) => {
+    navigate(`/dashboard/almoxarifado/item/${id}`);
+  };
+
+  const handleImport = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv, .xlsx, .xls';
+    
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        // Simulating file import
+        setTimeout(() => {
+          toast({
+            title: "Importação Concluída",
+            description: `Arquivo ${file.name} importado com sucesso!`,
+          });
+        }, 1500);
+      }
+    };
+    
+    input.click();
+  };
+
+  const handleExport = () => {
+    // Simulating CSV export
+    setTimeout(() => {
+      toast({
+        title: "Exportação Concluída",
+        description: "Arquivo inventory_data.csv gerado com sucesso!",
+      });
+      
+      // In a real app, this would generate and download a CSV file
+      const fakeLink = document.createElement('a');
+      fakeLink.setAttribute('href', 'data:text/csv;charset=utf-8,');
+      fakeLink.setAttribute('download', 'inventory_data.csv');
+      fakeLink.style.display = 'none';
+      document.body.appendChild(fakeLink);
+      fakeLink.click();
+      document.body.removeChild(fakeLink);
+    }, 1000);
+  };
   
   const filteredItems = demoItems.filter(item => {
+    // Filter by tab selection
     if (selectedTab !== "todos" && selectedTab !== "alerta") {
-      if (item.category.toLowerCase() !== selectedTab) return false;
+      // Check if we're filtering by category or by department
+      if (selectedTab.startsWith("dept-")) {
+        const dept = selectedTab.replace("dept-", "").toLowerCase();
+        if (item.department.toLowerCase() !== dept) return false;
+      } else if (item.category.toLowerCase() !== selectedTab) {
+        return false;
+      }
     }
     
     if (selectedTab === "alerta" && item.quantity > item.minStock) {
       return false;
     }
     
+    // Filter by search term
     return (
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.location.toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
 
   const uniqueCategories = Array.from(new Set(demoItems.map(item => item.category.toLowerCase())));
+  const uniqueDepartments = Array.from(new Set(demoItems.map(item => item.department)));
 
   const lowStockCount = demoItems.filter(item => item.quantity <= item.minStock).length;
   const expiringCount = demoItems.filter(item => 
@@ -193,11 +293,11 @@ const Almoxarifado = () => {
           />
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => navigate('/dashboard/almoxarifado/import')} variant="outline">
+          <Button onClick={handleImport} variant="outline">
             <FileUp size={18} className="mr-2" />
             Importar
           </Button>
-          <Button onClick={() => navigate('/dashboard/almoxarifado/export')} variant="outline">
+          <Button onClick={handleExport} variant="outline">
             <FileDown size={18} className="mr-2" />
             Exportar
           </Button>
@@ -209,13 +309,23 @@ const Almoxarifado = () => {
       </div>
 
       <Tabs defaultValue="todos" value={selectedTab} onValueChange={setSelectedTab} className="mb-6">
-        <TabsList>
+        <TabsList className="flex flex-wrap">
           <TabsTrigger value="todos">Todos</TabsTrigger>
+          
+          {/* Category filters */}
           {uniqueCategories.map(category => (
             <TabsTrigger value={category} key={category}>
               {category.charAt(0).toUpperCase() + category.slice(1)}
             </TabsTrigger>
           ))}
+          
+          {/* Department filters */}
+          {uniqueDepartments.map(department => (
+            <TabsTrigger value={`dept-${department.toLowerCase()}`} key={department}>
+              {department}
+            </TabsTrigger>
+          ))}
+          
           <TabsTrigger value="alerta" className="text-orange-500">Alertas</TabsTrigger>
         </TabsList>
         
@@ -227,6 +337,7 @@ const Almoxarifado = () => {
                   <TableRow>
                     <TableHead>Nome</TableHead>
                     <TableHead>Categoria</TableHead>
+                    <TableHead>Secretaria</TableHead>
                     <TableHead>Quantidade</TableHead>
                     <TableHead>Unidade</TableHead>
                     <TableHead>Validade</TableHead>
@@ -238,7 +349,7 @@ const Almoxarifado = () => {
                 <TableBody>
                   {filteredItems.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-6 text-gray-500">
+                      <TableCell colSpan={9} className="text-center py-6 text-gray-500">
                         Nenhum item encontrado
                       </TableCell>
                     </TableRow>
@@ -249,9 +360,15 @@ const Almoxarifado = () => {
                         new Date(item.expirationDate) <= new Date(new Date().setMonth(new Date().getMonth() + 3));
                       
                       return (
-                        <MotionTableRow key={item.id} index={index}>
+                        <MotionTableRow 
+                          key={item.id} 
+                          index={index}
+                          className="cursor-pointer hover:bg-gray-50"
+                          onClick={() => handleViewItem(item.id)}
+                        >
                           <TableCell className="font-medium">{item.name}</TableCell>
                           <TableCell>{item.category}</TableCell>
+                          <TableCell>{item.department}</TableCell>
                           <TableCell>{item.quantity}</TableCell>
                           <TableCell>{item.unit}</TableCell>
                           <TableCell>{item.expirationDate || 'N/A'}</TableCell>

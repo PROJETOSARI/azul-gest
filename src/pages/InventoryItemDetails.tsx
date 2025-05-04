@@ -1,21 +1,21 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { MotionContainer } from '@/components/animations/MotionContainer';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Edit, Trash, Package, Calendar, MapPin, Info, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Edit, Trash, Package, Calendar, MapPin, Info, BarChart3, Building } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 
-const InventoryItemDetails = () => {
-  const navigate = useNavigate();
-  
-  // This would come from API or route params in a real app
-  const item = {
+// Mock data - would come from API in real app
+const demoItems = [
+  {
     id: "1",
     name: "Papel A4",
     category: "Escritório",
+    department: "Administração",
     quantity: 500,
     unit: "Folhas",
     expirationDate: null,
@@ -28,7 +28,177 @@ const InventoryItemDetails = () => {
       { date: "2025-04-15", type: "Saída", quantity: 50, user: "Maria Souza" },
       { date: "2025-04-10", type: "Entrada", quantity: 200, user: "João Silva" }
     ]
+  },
+  {
+    id: "2",
+    name: "Canetas Esferográficas",
+    category: "Escritório",
+    department: "Educação",
+    quantity: 150,
+    unit: "Unidades",
+    expirationDate: null,
+    minStock: 30,
+    location: "Gaveta B2",
+    lastUpdated: "2025-04-29",
+    notes: "Canetas esferográficas azuis",
+    history: [
+      { date: "2025-04-29", type: "Entrada", quantity: 150, user: "Pedro Santos" },
+      { date: "2025-04-20", type: "Saída", quantity: 25, user: "Ana Oliveira" }
+    ]
+  },
+  {
+    id: "3",
+    name: "Álcool em Gel",
+    category: "Limpeza",
+    department: "Saúde",
+    quantity: 20,
+    unit: "Frascos",
+    expirationDate: "2026-03-15",
+    minStock: 5,
+    location: "Prateleira C3",
+    lastUpdated: "2025-05-02",
+    notes: "Álcool em gel 70% para higienização",
+    history: [
+      { date: "2025-05-02", type: "Entrada", quantity: 20, user: "Carlos Lima" },
+      { date: "2025-04-15", type: "Saída", quantity: 5, user: "Fernanda Costa" }
+    ]
+  },
+  {
+    id: "4",
+    name: "Máscaras Descartáveis",
+    category: "Médico",
+    department: "Saúde",
+    quantity: 80,
+    unit: "Unidades",
+    expirationDate: "2025-12-31",
+    minStock: 50,
+    location: "Armário D4",
+    lastUpdated: "2025-04-15",
+    notes: "Máscaras cirúrgicas descartáveis",
+    history: [
+      { date: "2025-04-15", type: "Entrada", quantity: 100, user: "Carlos Lima" },
+      { date: "2025-04-10", type: "Saída", quantity: 20, user: "Mariana Costa" }
+    ]
+  },
+  {
+    id: "5",
+    name: "Cartuchos de Tinta",
+    category: "Informática",
+    department: "Administração",
+    quantity: 8,
+    unit: "Unidades",
+    expirationDate: "2025-11-01",
+    minStock: 4,
+    location: "Gaveta E5",
+    lastUpdated: "2025-04-20",
+    notes: "Cartuchos de tinta preta para impressora HP",
+    history: [
+      { date: "2025-04-20", type: "Entrada", quantity: 10, user: "Roberto Alves" },
+      { date: "2025-04-18", type: "Saída", quantity: 2, user: "Julia Mendes" }
+    ]
+  },
+  {
+    id: "6",
+    name: "Cimento",
+    category: "Manutenção",
+    department: "Obras",
+    quantity: 25,
+    unit: "Pacotes",
+    expirationDate: "2025-10-15",
+    minStock: 10,
+    location: "Depósito F6",
+    lastUpdated: "2025-04-25",
+    notes: "Cimento Portland CP IV-32",
+    history: [
+      { date: "2025-04-25", type: "Entrada", quantity: 30, user: "Marcos Silva" },
+      { date: "2025-04-22", type: "Saída", quantity: 5, user: "Paulo Rocha" }
+    ]
+  },
+  {
+    id: "7",
+    name: "Folders Turísticos",
+    category: "Escritório",
+    department: "Turismo",
+    quantity: 500,
+    unit: "Unidades",
+    expirationDate: null,
+    minStock: 100,
+    location: "Armário G7",
+    lastUpdated: "2025-05-03",
+    notes: "Folders com informações turísticas do município",
+    history: [
+      { date: "2025-05-03", type: "Entrada", quantity: 500, user: "Carla Santos" },
+      { date: "2025-04-25", type: "Saída", quantity: 100, user: "Miguel Costa" }
+    ]
+  },
+  {
+    id: "8",
+    name: "Sementes de Árvores",
+    category: "Manutenção",
+    department: "Meio Ambiente",
+    quantity: 300,
+    unit: "Pacotes",
+    expirationDate: "2026-05-01",
+    minStock: 50,
+    location: "Estante H8",
+    lastUpdated: "2025-04-10",
+    notes: "Sementes de árvores nativas para reflorestamento",
+    history: [
+      { date: "2025-04-10", type: "Entrada", quantity: 350, user: "Luiza Ferreira" },
+      { date: "2025-04-05", type: "Saída", quantity: 50, user: "Gabriel Santos" }
+    ]
+  }
+];
+
+const InventoryItemDetails = () => {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const [item, setItem] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    // Simulate API fetch
+    setLoading(true);
+    setTimeout(() => {
+      const foundItem = demoItems.find(item => item.id === id);
+      if (foundItem) {
+        setItem(foundItem);
+      } else {
+        toast({
+          title: "Item não encontrado",
+          description: "O item solicitado não foi encontrado.",
+          variant: "destructive"
+        });
+        navigate('/dashboard/almoxarifado');
+      }
+      setLoading(false);
+    }, 300);
+  }, [id, navigate, toast]);
+
+  const handleDelete = () => {
+    // Simulate deletion
+    toast({
+      title: "Item excluído",
+      description: `${item.name} foi removido do estoque.`,
+      variant: "destructive"
+    });
+    navigate('/dashboard/almoxarifado');
   };
+  
+  if (loading) {
+    return (
+      <MotionContainer>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-pulse text-center">
+            <p className="text-lg text-gray-500">Carregando detalhes do item...</p>
+          </div>
+        </div>
+      </MotionContainer>
+    );
+  }
+  
+  if (!item) return null;
   
   const isLowStock = item.quantity <= item.minStock;
 
@@ -59,7 +229,7 @@ const InventoryItemDetails = () => {
             <Edit size={18} className="mr-2" />
             Editar
           </Button>
-          <Button variant="destructive">
+          <Button variant="destructive" onClick={handleDelete}>
             <Trash size={18} className="mr-2" />
             Excluir
           </Button>
@@ -96,6 +266,10 @@ const InventoryItemDetails = () => {
                       <div>
                         <p className="text-sm font-medium text-gray-500">Categoria</p>
                         <p>{item.category}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Secretaria</p>
+                        <p>{item.department}</p>
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-500">Quantidade</p>
@@ -143,7 +317,7 @@ const InventoryItemDetails = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {item.history.map((entry, i) => (
+                        {item.history.map((entry: any, i: number) => (
                           <motion.tr 
                             key={i}
                             className="border-b hover:bg-gray-50"
@@ -216,6 +390,14 @@ const InventoryItemDetails = () => {
                     <div>
                       <p className="text-sm text-gray-500">Localização</p>
                       <p>{item.location}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <Building className="h-5 w-5 mr-2 text-gray-500" />
+                    <div>
+                      <p className="text-sm text-gray-500">Secretaria</p>
+                      <p>{item.department}</p>
                     </div>
                   </div>
                 </div>

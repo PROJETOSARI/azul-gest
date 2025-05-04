@@ -96,7 +96,7 @@ const DashboardLayout = () => {
       </motion.div>
 
       <motion.div 
-        className="lg:hidden fixed top-4 left-4 z-30"
+        className="lg:hidden fixed top-4 left-4 z-50" // Updated z-index to 50
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3, delay: 0.1 }}

@@ -76,6 +76,12 @@ const DashboardLayout = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  // Fixed function to handle menu item navigation
+  const handleMenuItemClick = (path) => {
+    navigate(path);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Back arrow button */}
@@ -96,7 +102,7 @@ const DashboardLayout = () => {
       </motion.div>
 
       <motion.div 
-        className="lg:hidden fixed top-4 left-4 z-50" // Updated z-index to 50
+        className="lg:hidden fixed top-4 left-4 z-50"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3, delay: 0.1 }}
@@ -153,10 +159,7 @@ const DashboardLayout = () => {
           </motion.div>
 
           <motion.div 
-            onClick={() => {
-              navigate('/dashboard/profile');
-              setIsMobileMenuOpen(false);
-            }}
+            onClick={() => navigate('/dashboard/profile')}
             className="px-4 py-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -183,18 +186,18 @@ const DashboardLayout = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + index * 0.05, duration: 0.3 }}
                 >
-                  <Link
-                    to={item.path}
-                    className={`flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors
+                  <Button
+                    className={`flex items-center w-full px-4 py-3 text-sm font-medium rounded-md transition-colors
                       ${isActive
                         ? 'bg-brand-blue text-white'
                         : 'text-gray-700 hover:bg-gray-100'
                       }`}
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    variant="ghost"
+                    onClick={() => handleMenuItemClick(item.path)}
                   >
                     <span className="mr-3">{item.icon}</span>
-                    <span className={`${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>{item.name}</span>
-                  </Link>
+                    <span className={`${!isHovering && 'lg:hidden'} transition-opacity duration-300 text-left`}>{item.name}</span>
+                  </Button>
                 </motion.div>
               );
             })}

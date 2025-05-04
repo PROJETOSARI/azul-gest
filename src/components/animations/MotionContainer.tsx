@@ -34,11 +34,13 @@ export const MotionTableContainer = ({ children }: { children: ReactNode }) => {
 export const MotionTableRow = ({ 
   children, 
   index = 0, 
-  className = "" 
+  className = "",
+  onClick
 }: { 
   children: ReactNode; 
   index?: number;
-  className?: string;  
+  className?: string;
+  onClick?: () => void;
 }) => {
   return (
     <motion.tr
@@ -46,6 +48,7 @@ export const MotionTableRow = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.1 + index * 0.05 }}
       className={`border-b hover:bg-gray-50 ${className}`}
+      onClick={onClick}
     >
       {children}
     </motion.tr>

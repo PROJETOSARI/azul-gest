@@ -76,7 +76,6 @@ const DashboardLayout = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // Fixed function to handle menu item navigation
   const handleMenuItemClick = (path) => {
     navigate(path);
     setIsMobileMenuOpen(false);
@@ -186,18 +185,17 @@ const DashboardLayout = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + index * 0.05, duration: 0.3 }}
                 >
-                  <Button
-                    className={`flex items-center w-full px-4 py-3 text-sm font-medium rounded-md transition-colors
+                  <button
+                    className={`flex items-center w-full px-4 py-3 text-sm font-medium rounded-md transition-colors text-left
                       ${isActive
                         ? 'bg-brand-blue text-white'
                         : 'text-gray-700 hover:bg-gray-100'
                       }`}
-                    variant="ghost"
                     onClick={() => handleMenuItemClick(item.path)}
                   >
                     <span className="mr-3">{item.icon}</span>
-                    <span className={`${!isHovering && 'lg:hidden'} transition-opacity duration-300 text-left`}>{item.name}</span>
-                  </Button>
+                    <span className={`${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>{item.name}</span>
+                  </button>
                 </motion.div>
               );
             })}
@@ -215,7 +213,7 @@ const DashboardLayout = () => {
                 logout();
                 setIsMobileMenuOpen(false);
               }}
-              className={`w-full flex items-center justify-center gap-2 text-gray-700 hover:text-brand-blue ${!isHovering && 'lg:p-2'}`}
+              className={`w-full flex items-center justify-start gap-2 text-gray-700 hover:text-brand-blue ${!isHovering && 'lg:p-2'}`}
             >
               <LogOut size={16} />
               <span className={`${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>Sair</span>

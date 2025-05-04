@@ -2,14 +2,28 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MotionContainer, MotionCard, MotionTableRow } from '@/components/animations/MotionContainer';
-import { Plus, Archive, Search, Package, FileDown, FileUp, AlertCircle } from 'lucide-react';
+import { Plus, Archive, Search, Package, FileDown, FileUp, AlertCircle, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface InventoryItem {
   id: string;
@@ -128,7 +142,7 @@ const demoItems: InventoryItem[] = [
 const Almoxarifado = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
-  const [selectedTab, setSelectedTab] = useState("todos");
+  const [selectedFilter, setSelectedFilter] = useState("todos");
   const { toast } = useToast();
   
   const handleViewItem = (id: string) => {
@@ -176,18 +190,18 @@ const Almoxarifado = () => {
   };
   
   const filteredItems = demoItems.filter(item => {
-    // Filter by tab selection
-    if (selectedTab !== "todos" && selectedTab !== "alerta") {
+    // Filter by dropdown selection
+    if (selectedFilter !== "todos" && selectedFilter !== "alerta") {
       // Check if we're filtering by category or by department
-      if (selectedTab.startsWith("dept-")) {
-        const dept = selectedTab.replace("dept-", "").toLowerCase();
+      if (selectedFilter.startsWith("dept-")) {
+        const dept = selectedFilter.replace("dept-", "").toLowerCase();
         if (item.department.toLowerCase() !== dept) return false;
-      } else if (item.category.toLowerCase() !== selectedTab) {
+      } else if (item.category.toLowerCase() !== selectedFilter) {
         return false;
       }
     }
     
-    if (selectedTab === "alerta" && item.quantity > item.minStock) {
+    if (selectedFilter === "alerta" && item.quantity > item.minStock) {
       return false;
     }
     
@@ -283,15 +297,63 @@ const Almoxarifado = () => {
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 justify-between mb-6">
-        <div className="relative w-full md:w-96">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-          <Input 
-            className="pl-10"
-            placeholder="Buscar itens..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="flex gap-4 flex-1">
+          <div className="relative w-full md:w-96">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <Input 
+              className="pl-10"
+              placeholder="Buscar itens..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Filter size={18} />
+                Filtrar
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuLabel>Filtros</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => setSelectedFilter("todos")}>
+                Todos
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Por Categoria</DropdownMenuLabel>
+              {uniqueCategories.map(category => (
+                <DropdownMenuItem 
+                  key={category} 
+                  onClick={() => setSelectedFilter(category)}
+                >
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </DropdownMenuItem>
+              ))}
+              
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Por Secretaria</DropdownMenuLabel>
+              {uniqueDepartments.map(department => (
+                <DropdownMenuItem 
+                  key={department} 
+                  onClick={() => setSelectedFilter(`dept-${department.toLowerCase()}`)}
+                >
+                  {department}
+                </DropdownMenuItem>
+              ))}
+              
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => setSelectedFilter("alerta")}
+                className="text-orange-500"
+              >
+                Alertas
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
+        
         <div className="flex gap-2">
           <Button onClick={handleImport} variant="outline">
             <FileUp size={18} className="mr-2" />
@@ -308,99 +370,75 @@ const Almoxarifado = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="todos" value={selectedTab} onValueChange={setSelectedTab} className="mb-6">
-        <TabsList className="flex flex-wrap">
-          <TabsTrigger value="todos">Todos</TabsTrigger>
-          
-          {/* Category filters */}
-          {uniqueCategories.map(category => (
-            <TabsTrigger value={category} key={category}>
-              {category.charAt(0).toUpperCase() + category.slice(1)}
-            </TabsTrigger>
-          ))}
-          
-          {/* Department filters */}
-          {uniqueDepartments.map(department => (
-            <TabsTrigger value={`dept-${department.toLowerCase()}`} key={department}>
-              {department}
-            </TabsTrigger>
-          ))}
-          
-          <TabsTrigger value="alerta" className="text-orange-500">Alertas</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value={selectedTab}>
-          <Card>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead>Secretaria</TableHead>
-                    <TableHead>Quantidade</TableHead>
-                    <TableHead>Unidade</TableHead>
-                    <TableHead>Validade</TableHead>
-                    <TableHead>Local</TableHead>
-                    <TableHead>Última Atualização</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredItems.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={9} className="text-center py-6 text-gray-500">
-                        Nenhum item encontrado
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>Categoria</TableHead>
+                <TableHead>Secretaria</TableHead>
+                <TableHead>Quantidade</TableHead>
+                <TableHead>Unidade</TableHead>
+                <TableHead>Validade</TableHead>
+                <TableHead>Local</TableHead>
+                <TableHead>Última Atualização</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredItems.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center py-6 text-gray-500">
+                    Nenhum item encontrado
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredItems.map((item, index) => {
+                  const isLowStock = item.quantity <= item.minStock;
+                  const isExpiring = item.expirationDate && 
+                    new Date(item.expirationDate) <= new Date(new Date().setMonth(new Date().getMonth() + 3));
+                  
+                  return (
+                    <MotionTableRow 
+                      key={item.id} 
+                      index={index}
+                      className="cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleViewItem(item.id)}
+                    >
+                      <TableCell className="font-medium">{item.name}</TableCell>
+                      <TableCell>{item.category}</TableCell>
+                      <TableCell>{item.department}</TableCell>
+                      <TableCell>{item.quantity}</TableCell>
+                      <TableCell>{item.unit}</TableCell>
+                      <TableCell>{item.expirationDate || 'N/A'}</TableCell>
+                      <TableCell>{item.location}</TableCell>
+                      <TableCell>{item.lastUpdated}</TableCell>
+                      <TableCell>
+                        {isLowStock && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-800">
+                            Estoque Baixo
+                          </span>
+                        )}
+                        {isExpiring && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-red-100 text-red-800 ml-1">
+                            Próximo ao Vencimento
+                          </span>
+                        )}
+                        {!isLowStock && !isExpiring && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800">
+                            Normal
+                          </span>
+                        )}
                       </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredItems.map((item, index) => {
-                      const isLowStock = item.quantity <= item.minStock;
-                      const isExpiring = item.expirationDate && 
-                        new Date(item.expirationDate) <= new Date(new Date().setMonth(new Date().getMonth() + 3));
-                      
-                      return (
-                        <MotionTableRow 
-                          key={item.id} 
-                          index={index}
-                          className="cursor-pointer hover:bg-gray-50"
-                          onClick={() => handleViewItem(item.id)}
-                        >
-                          <TableCell className="font-medium">{item.name}</TableCell>
-                          <TableCell>{item.category}</TableCell>
-                          <TableCell>{item.department}</TableCell>
-                          <TableCell>{item.quantity}</TableCell>
-                          <TableCell>{item.unit}</TableCell>
-                          <TableCell>{item.expirationDate || 'N/A'}</TableCell>
-                          <TableCell>{item.location}</TableCell>
-                          <TableCell>{item.lastUpdated}</TableCell>
-                          <TableCell>
-                            {isLowStock && (
-                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-800">
-                                Estoque Baixo
-                              </span>
-                            )}
-                            {isExpiring && (
-                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-red-100 text-red-800 ml-1">
-                                Próximo ao Vencimento
-                              </span>
-                            )}
-                            {!isLowStock && !isExpiring && (
-                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800">
-                                Normal
-                              </span>
-                            )}
-                          </TableCell>
-                        </MotionTableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                    </MotionTableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </MotionContainer>
   );
 };

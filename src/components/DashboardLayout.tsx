@@ -242,7 +242,7 @@ const DashboardLayout = () => {
           />
         )}
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-6">
+        <main className={`flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-6 ${isHovering ? 'lg:pl-0' : 'lg:pl-0'}`}>
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}

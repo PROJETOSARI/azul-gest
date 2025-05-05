@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -23,8 +24,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { generateContractPDF } from '@/utils/generateContractPDF';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MotionPage, MotionTableRow, MotionCard } from "@/components/animations/MotionContainer";
 
 interface Contrato {
   id: string;
@@ -285,409 +284,372 @@ const Licitacoes = () => {
   };
 
   return (
-    <MotionPage>
-      <motion.h1 
-        className="text-2xl font-bold mb-6"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        Licitações
-      </motion.h1>
+    <div className="container mx-auto py-6 animate-fade-in">
+      <h1 className="text-2xl font-bold mb-6">Licitações</h1>
       
       <Tabs defaultValue="contratos" className="w-full">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <TabsList className="grid w-full max-w-md grid-cols-2 mb-4">
-            <TabsTrigger value="contratos">Contratos</TabsTrigger>
-            <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
-          </TabsList>
-        </motion.div>
+        <TabsList className="grid w-full max-w-md grid-cols-2 mb-4">
+          <TabsTrigger value="contratos">Contratos</TabsTrigger>
+          <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
+        </TabsList>
         
-        <AnimatePresence mode="wait">
-          <TabsContent value="contratos">
-            <MotionCard>
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>Contratos</CardTitle>
-                      <CardDescription>
-                        Gerenciamento de contratos de licitações municipais
-                      </CardDescription>
-                    </div>
-                    <Dialog open={openDialogContrato} onOpenChange={setOpenDialogContrato}>
-                      <DialogTrigger asChild>
-                        <Button>
-                          <Plus className="mr-2 h-4 w-4" /> Novo Contrato
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-[550px]">
-                        <DialogHeader>
-                          <DialogTitle>
-                            {selectedContract ? "Editar Contrato" : "Adicionar Novo Contrato"}
-                          </DialogTitle>
-                        </DialogHeader>
-                        <form onSubmit={handleContratoSubmit} className="grid gap-4 py-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="numero">Número</Label>
-                              <Input
-                                id="numero"
-                                name="numero"
-                                value={novoContrato.numero || ''}
-                                onChange={handleContratoInputChange}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="empresa">Empresa</Label>
-                              <Input
-                                id="empresa"
-                                name="empresa"
-                                value={novoContrato.empresa || ''}
-                                onChange={handleContratoInputChange}
-                              />
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="objeto">Objeto</Label>
-                            <Input
-                              id="objeto"
-                              name="objeto"
-                              value={novoContrato.objeto || ''}
-                              onChange={handleContratoInputChange}
-                            />
-                          </div>
-                          <div className="grid grid-cols-3 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="valor">Valor (R$)</Label>
-                              <Input
-                                id="valor"
-                                name="valor"
-                                type="number"
-                                value={novoContrato.valor || ''}
-                                onChange={handleContratoInputChange}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="dataInicio">Data de Início</Label>
-                              <Input
-                                id="dataInicio"
-                                name="dataInicio"
-                                type="date"
-                                value={novoContrato.dataInicio || ''}
-                                onChange={handleContratoInputChange}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="dataFim">Data de Término</Label>
-                              <Input
-                                id="dataFim"
-                                name="dataFim"
-                                type="date"
-                                value={novoContrato.dataFim || ''}
-                                onChange={handleContratoInputChange}
-                              />
-                            </div>
-                          </div>
-                          <Button type="submit" className="mt-4">
-                            {selectedContract ? "Salvar Alterações" : "Adicionar Contrato"}
-                          </Button>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <motion.div 
-                    className="flex mb-4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.4, delay: 0.2 }}
-                  >
-                    <div className="relative w-full max-w-sm">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Buscar contratos..."
-                        className="pl-8"
-                        value={searchContrato}
-                        onChange={(e) => setSearchContrato(e.target.value)}
-                      />
-                    </div>
-                  </motion.div>
-                  <Table>
-                    <TableCaption>Lista de contratos ativos e finalizados</TableCaption>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Número</TableHead>
-                        <TableHead>Empresa</TableHead>
-                        <TableHead>Objeto</TableHead>
-                        <TableHead>Valor</TableHead>
-                        <TableHead>Início</TableHead>
-                        <TableHead>Término</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredContratos.map((contrato, index) => (
-                        <motion.tr
-                          key={contrato.id}
-                          className="cursor-pointer"
-                          onClick={() => handleContractClick(contrato)}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: 0.1 + index * 0.05 }}
-                        >
-                          <TableCell>{contrato.numero}</TableCell>
-                          <TableCell>{contrato.empresa}</TableCell>
-                          <TableCell>{contrato.objeto}</TableCell>
-                          <TableCell>{formatCurrency(contrato.valor)}</TableCell>
-                          <TableCell>{formatDate(contrato.dataInicio)}</TableCell>
-                          <TableCell>{formatDate(contrato.dataFim)}</TableCell>
-                          <TableCell>
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                contrato.status === "Vigente"
-                                  ? "bg-green-100 text-green-800"
-                                  : contrato.status === "Finalizado"
-                                  ? "bg-blue-100 text-blue-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
-                            >
-                              {contrato.status}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEditContract(contrato);
-                                }}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  excluirContrato(contrato.id);
-                                }}
-                              >
-                                <Trash className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </motion.tr>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </MotionCard>
-
-            <Dialog open={openContractDialog} onOpenChange={setOpenContractDialog}>
-              <DialogContent className="sm:max-w-[600px]">
-                {selectedContract && (
-                  <>
+        <TabsContent value="contratos">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Contratos</CardTitle>
+                  <CardDescription>
+                    Gerenciamento de contratos de licitações municipais
+                  </CardDescription>
+                </div>
+                <Dialog open={openDialogContrato} onOpenChange={setOpenDialogContrato}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="mr-2 h-4 w-4" /> Novo Contrato
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[550px]">
                     <DialogHeader>
-                      <DialogTitle>Detalhes do Contrato #{selectedContract.numero}</DialogTitle>
+                      <DialogTitle>
+                        {selectedContract ? "Editar Contrato" : "Adicionar Novo Contrato"}
+                      </DialogTitle>
                     </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="space-y-4">
-                        <div>
-                          <h3 className="font-medium text-gray-500">Empresa</h3>
-                          <p className="text-lg">{selectedContract.empresa}</p>
+                    <form onSubmit={handleContratoSubmit} className="grid gap-4 py-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="numero">Número</Label>
+                          <Input
+                            id="numero"
+                            name="numero"
+                            value={novoContrato.numero || ''}
+                            onChange={handleContratoInputChange}
+                          />
                         </div>
-                        <div>
-                          <h3 className="font-medium text-gray-500">Objeto</h3>
-                          <p className="text-lg">{selectedContract.objeto}</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <h3 className="font-medium text-gray-500">Valor</h3>
-                            <p className="text-lg">{formatCurrency(selectedContract.valor)}</p>
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-gray-500">Status</h3>
-                            <span
-                              className={`inline-block px-2 py-1 rounded-full text-sm font-medium ${
-                                selectedContract.status === "Vigente"
-                                  ? "bg-green-100 text-green-800"
-                                  : selectedContract.status === "Finalizado"
-                                  ? "bg-blue-100 text-blue-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
-                            >
-                              {selectedContract.status}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <h3 className="font-medium text-gray-500">Data de Início</h3>
-                            <p className="text-lg">{formatDate(selectedContract.dataInicio)}</p>
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-gray-500">Data de Término</h3>
-                            <p className="text-lg">{formatDate(selectedContract.dataFim)}</p>
-                          </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="empresa">Empresa</Label>
+                          <Input
+                            id="empresa"
+                            name="empresa"
+                            value={novoContrato.empresa || ''}
+                            onChange={handleContratoInputChange}
+                          />
                         </div>
                       </div>
-                      <Button 
-                        onClick={() => handleDownloadContract(selectedContract)}
-                        className="mt-4"
-                      >
-                        <Download className="mr-2 h-4 w-4" />
-                        Baixar Contrato
+                      <div className="space-y-2">
+                        <Label htmlFor="objeto">Objeto</Label>
+                        <Input
+                          id="objeto"
+                          name="objeto"
+                          value={novoContrato.objeto || ''}
+                          onChange={handleContratoInputChange}
+                        />
+                      </div>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="valor">Valor (R$)</Label>
+                          <Input
+                            id="valor"
+                            name="valor"
+                            type="number"
+                            value={novoContrato.valor || ''}
+                            onChange={handleContratoInputChange}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="dataInicio">Data de Início</Label>
+                          <Input
+                            id="dataInicio"
+                            name="dataInicio"
+                            type="date"
+                            value={novoContrato.dataInicio || ''}
+                            onChange={handleContratoInputChange}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="dataFim">Data de Término</Label>
+                          <Input
+                            id="dataFim"
+                            name="dataFim"
+                            type="date"
+                            value={novoContrato.dataFim || ''}
+                            onChange={handleContratoInputChange}
+                          />
+                        </div>
+                      </div>
+                      <Button type="submit" className="mt-4">
+                        {selectedContract ? "Salvar Alterações" : "Adicionar Contrato"}
                       </Button>
-                    </div>
-                  </>
-                )}
-              </DialogContent>
-            </Dialog>
-          </TabsContent>
-          
-          <TabsContent value="relatorios">
-            <MotionCard>
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>Relatórios</CardTitle>
-                      <CardDescription>
-                        Relatórios e documentos relacionados às licitações
-                      </CardDescription>
-                    </div>
-                    <Dialog open={openDialogRelatorio} onOpenChange={setOpenDialogRelatorio}>
-                      <DialogTrigger asChild>
-                        <Button>
-                          <Plus className="mr-2 h-4 w-4" /> Novo Relatório
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-[500px]">
-                        <DialogHeader>
-                          <DialogTitle>Adicionar Novo Relatório</DialogTitle>
-                        </DialogHeader>
-                        <form onSubmit={handleRelatorioSubmit} className="grid gap-4 py-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="titulo">Título</Label>
-                            <Input
-                              id="titulo"
-                              name="titulo"
-                              value={novoRelatorio.titulo || ''}
-                              onChange={handleRelatorioInputChange}
-                            />
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="tipo">Tipo</Label>
-                              <Input
-                                id="tipo"
-                                name="tipo"
-                                value={novoRelatorio.tipo || ''}
-                                onChange={handleRelatorioInputChange}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="arquivo">Nome do Arquivo</Label>
-                              <Input
-                                id="arquivo"
-                                name="arquivo"
-                                value={novoRelatorio.arquivo || ''}
-                                onChange={handleRelatorioInputChange}
-                              />
-                            </div>
-                          </div>
-                          <Button type="submit" className="mt-4">Adicionar Relatório</Button>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <motion.div 
-                    className="flex mb-4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.4, delay: 0.2 }}
-                  >
-                    <div className="relative w-full max-w-sm">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Buscar relatórios..."
-                        className="pl-8"
-                        value={searchRelatorio}
-                        onChange={(e) => setSearchRelatorio(e.target.value)}
-                      />
-                    </div>
-                  </motion.div>
-                  <Table>
-                    <TableCaption>Lista de relatórios disponíveis</TableCaption>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Título</TableHead>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead>Data</TableHead>
-                        <TableHead>Gerado por</TableHead>
-                        <TableHead>Arquivo</TableHead>
-                        <TableHead>Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredRelatorios.map((relatorio, index) => (
-                        <motion.tr 
-                          key={relatorio.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: 0.1 + index * 0.05 }}
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex mb-4">
+                <div className="relative w-full max-w-sm">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar contratos..."
+                    className="pl-8"
+                    value={searchContrato}
+                    onChange={(e) => setSearchContrato(e.target.value)}
+                  />
+                </div>
+              </div>
+              <Table>
+                <TableCaption>Lista de contratos ativos e finalizados</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Número</TableHead>
+                    <TableHead>Empresa</TableHead>
+                    <TableHead>Objeto</TableHead>
+                    <TableHead>Valor</TableHead>
+                    <TableHead>Início</TableHead>
+                    <TableHead>Término</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredContratos.map((contrato) => (
+                    <TableRow 
+                      key={contrato.id}
+                      className="cursor-pointer"
+                      onClick={() => handleContractClick(contrato)}
+                    >
+                      <TableCell>{contrato.numero}</TableCell>
+                      <TableCell>{contrato.empresa}</TableCell>
+                      <TableCell>{contrato.objeto}</TableCell>
+                      <TableCell>{formatCurrency(contrato.valor)}</TableCell>
+                      <TableCell>{formatDate(contrato.dataInicio)}</TableCell>
+                      <TableCell>{formatDate(contrato.dataFim)}</TableCell>
+                      <TableCell>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            contrato.status === "Vigente"
+                              ? "bg-green-100 text-green-800"
+                              : contrato.status === "Finalizado"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
                         >
-                          <TableCell>{relatorio.titulo}</TableCell>
-                          <TableCell>{relatorio.tipo}</TableCell>
-                          <TableCell>{formatDate(relatorio.dataGeracao)}</TableCell>
-                          <TableCell>{relatorio.geradoPor}</TableCell>
-                          <TableCell>
-                            <span className="flex items-center">
-                              <FileText className="mr-2 h-4 w-4 text-blue-500" />
-                              {relatorio.arquivo}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                onClick={() => downloadRelatorio(relatorio.arquivo)}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => excluirRelatorio(relatorio.id)}
-                              >
-                                <Trash className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </motion.tr>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </MotionCard>
-          </TabsContent>
-        </AnimatePresence>
+                          {contrato.status}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditContract(contrato);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              excluirContrato(contrato.id);
+                            }}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          <Dialog open={openContractDialog} onOpenChange={setOpenContractDialog}>
+            <DialogContent className="sm:max-w-[600px]">
+              {selectedContract && (
+                <>
+                  <DialogHeader>
+                    <DialogTitle>Detalhes do Contrato #{selectedContract.numero}</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="font-medium text-gray-500">Empresa</h3>
+                        <p className="text-lg">{selectedContract.empresa}</p>
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-500">Objeto</h3>
+                        <p className="text-lg">{selectedContract.objeto}</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <h3 className="font-medium text-gray-500">Valor</h3>
+                          <p className="text-lg">{formatCurrency(selectedContract.valor)}</p>
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-gray-500">Status</h3>
+                          <span
+                            className={`inline-block px-2 py-1 rounded-full text-sm font-medium ${
+                              selectedContract.status === "Vigente"
+                                ? "bg-green-100 text-green-800"
+                                : selectedContract.status === "Finalizado"
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {selectedContract.status}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <h3 className="font-medium text-gray-500">Data de Início</h3>
+                          <p className="text-lg">{formatDate(selectedContract.dataInicio)}</p>
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-gray-500">Data de Término</h3>
+                          <p className="text-lg">{formatDate(selectedContract.dataFim)}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={() => handleDownloadContract(selectedContract)}
+                      className="mt-4"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Baixar Contrato
+                    </Button>
+                  </div>
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
+        </TabsContent>
+        
+        <TabsContent value="relatorios">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Relatórios</CardTitle>
+                  <CardDescription>
+                    Relatórios e documentos relacionados às licitações
+                  </CardDescription>
+                </div>
+                <Dialog open={openDialogRelatorio} onOpenChange={setOpenDialogRelatorio}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="mr-2 h-4 w-4" /> Novo Relatório
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                      <DialogTitle>Adicionar Novo Relatório</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleRelatorioSubmit} className="grid gap-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="titulo">Título</Label>
+                        <Input
+                          id="titulo"
+                          name="titulo"
+                          value={novoRelatorio.titulo || ''}
+                          onChange={handleRelatorioInputChange}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="tipo">Tipo</Label>
+                          <Input
+                            id="tipo"
+                            name="tipo"
+                            value={novoRelatorio.tipo || ''}
+                            onChange={handleRelatorioInputChange}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="arquivo">Nome do Arquivo</Label>
+                          <Input
+                            id="arquivo"
+                            name="arquivo"
+                            value={novoRelatorio.arquivo || ''}
+                            onChange={handleRelatorioInputChange}
+                          />
+                        </div>
+                      </div>
+                      <Button type="submit" className="mt-4">Adicionar Relatório</Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex mb-4">
+                <div className="relative w-full max-w-sm">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar relatórios..."
+                    className="pl-8"
+                    value={searchRelatorio}
+                    onChange={(e) => setSearchRelatorio(e.target.value)}
+                  />
+                </div>
+              </div>
+              <Table>
+                <TableCaption>Lista de relatórios disponíveis</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Título</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Gerado por</TableHead>
+                    <TableHead>Arquivo</TableHead>
+                    <TableHead>Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredRelatorios.map((relatorio) => (
+                    <TableRow key={relatorio.id}>
+                      <TableCell>{relatorio.titulo}</TableCell>
+                      <TableCell>{relatorio.tipo}</TableCell>
+                      <TableCell>{formatDate(relatorio.dataGeracao)}</TableCell>
+                      <TableCell>{relatorio.geradoPor}</TableCell>
+                      <TableCell>
+                        <span className="flex items-center">
+                          <FileText className="mr-2 h-4 w-4 text-blue-500" />
+                          {relatorio.arquivo}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => downloadRelatorio(relatorio.arquivo)}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => excluirRelatorio(relatorio.id)}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
-    </MotionPage>
+    </div>
   );
 };
 

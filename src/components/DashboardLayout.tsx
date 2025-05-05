@@ -14,6 +14,11 @@ const DashboardLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+  
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -78,7 +83,7 @@ const DashboardLayout = () => {
 
   const handleMenuItemClick = (path) => {
     navigate(path);
-    setIsMobileMenuOpen(false);
+    setIsMobileMenuOpen(false); // Ensure menu closes after selection
   };
 
   return (
@@ -158,7 +163,10 @@ const DashboardLayout = () => {
           </motion.div>
 
           <motion.div 
-            onClick={() => navigate('/dashboard/profile')}
+            onClick={() => {
+              navigate('/dashboard/profile');
+              setIsMobileMenuOpen(false); // Close menu when clicking on profile
+            }}
             className="px-4 py-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

@@ -1,13 +1,11 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
-import { LogOut, User, Calculator, Users, ClipboardList, FileText, ShoppingCart, ArrowLeft, Package, Moon, Sun } from 'lucide-react';
+import { LogOut, User, Calculator, Users, ClipboardList, FileText, ShoppingCart, ArrowLeft } from 'lucide-react';
 import { Link, useLocation, Navigate, useNavigate, Outlet } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import Footer from './Footer';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from './ThemeProvider';
-import { Switch } from "@/components/ui/switch";
 
 const DashboardLayout = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -15,12 +13,6 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
-  const { theme, setTheme } = useTheme();
-  
-  // Close mobile menu when route changes
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location.pathname]);
   
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -69,11 +61,6 @@ const DashboardLayout = () => {
       icon: <ShoppingCart size={20} />
     },
     {
-      name: 'Almoxarifado',
-      path: '/dashboard/almoxarifado',
-      icon: <Package size={20} />
-    },
-    {
       name: 'Simulador de Salário',
       path: '/dashboard/salary-simulator',
       icon: <Calculator size={20} />
@@ -84,12 +71,8 @@ const DashboardLayout = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
-
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex h-screen bg-gray-100">
       {/* Back arrow button */}
       <motion.div 
         className="fixed top-4 left-16 z-30 lg:left-24"
@@ -100,7 +83,7 @@ const DashboardLayout = () => {
         <Button
           variant="outline"
           size="icon"
-          className="bg-white dark:bg-gray-800 shadow-sm"
+          className="bg-white shadow-sm"
           onClick={handleGoBack}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -108,7 +91,7 @@ const DashboardLayout = () => {
       </motion.div>
 
       <motion.div 
-        className="lg:hidden fixed top-4 left-4 z-50"
+        className="lg:hidden fixed top-4 left-4 z-30"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3, delay: 0.1 }}
@@ -116,7 +99,7 @@ const DashboardLayout = () => {
         <Button
           variant="outline"
           size="icon"
-          className="bg-white dark:bg-gray-800"
+          className="bg-white"
           onClick={toggleMobileMenu}
         >
           <svg
@@ -141,7 +124,7 @@ const DashboardLayout = () => {
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           ${isHovering ? 'lg:w-64' : 'lg:w-20'}
           transition-all duration-300 ease-in-out lg:flex lg:flex-col
-          bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-sm`}
+          bg-white border-r border-gray-200 shadow-sm`}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
         initial={{ x: -100 }}
@@ -150,7 +133,7 @@ const DashboardLayout = () => {
       >
         <div className="flex flex-col h-full">
           <motion.div 
-            className="p-4 border-b border-gray-200 dark:border-gray-700"
+            className="p-4 border-b border-gray-200"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.3 }}
@@ -167,9 +150,9 @@ const DashboardLayout = () => {
           <motion.div 
             onClick={() => {
               navigate('/dashboard/profile');
-              setIsMobileMenuOpen(false); // Close menu when clicking on profile
+              setIsMobileMenuOpen(false);
             }}
-            className="px-4 py-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="px-4 py-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.3 }}
@@ -179,8 +162,8 @@ const DashboardLayout = () => {
                 <User size={20} />
               </div>
               <div className={`ml-3 ${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{user?.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
+                <p className="text-sm font-medium text-gray-700">{user?.name}</p>
+                <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
             </div>
           </motion.div>
@@ -197,11 +180,12 @@ const DashboardLayout = () => {
                 >
                   <Link
                     to={item.path}
-                    className={`flex items-center w-full px-4 py-3 text-sm font-medium rounded-md transition-colors text-left
+                    className={`flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors
                       ${isActive
                         ? 'bg-brand-blue text-white'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        : 'text-gray-700 hover:bg-gray-100'
                       }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <span className="mr-3">{item.icon}</span>
                     <span className={`${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>{item.name}</span>
@@ -211,30 +195,8 @@ const DashboardLayout = () => {
             })}
           </nav>
 
-          {/* Theme toggle */}
-          <motion.div
-            className="px-4 py-3 border-t border-gray-200 dark:border-gray-700"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.3 }}
-          >
-            <div className="flex items-center justify-between">
-              <span className={`text-sm text-gray-700 dark:text-gray-300 ${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>
-                {theme === 'dark' ? 'Modo Escuro' : 'Modo Claro'}
-              </span>
-              <div className="flex items-center space-x-2">
-                <Sun className={`h-4 w-4 ${theme === 'light' ? 'text-yellow-500' : 'text-gray-400'}`} />
-                <Switch
-                  checked={theme === 'dark'}
-                  onCheckedChange={toggleTheme}
-                />
-                <Moon className={`h-4 w-4 ${theme === 'dark' ? 'text-blue-400' : 'text-gray-400'}`} />
-              </div>
-            </div>
-          </motion.div>
-
           <motion.div 
-            className="p-4 border-t border-gray-200 dark:border-gray-700"
+            className="p-4 border-t border-gray-200"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.3 }}
@@ -245,7 +207,7 @@ const DashboardLayout = () => {
                 logout();
                 setIsMobileMenuOpen(false);
               }}
-              className={`w-full flex items-center justify-start gap-2 text-gray-700 dark:text-gray-300 hover:text-brand-blue ${!isHovering && 'lg:p-2'}`}
+              className={`w-full flex items-center justify-center gap-2 text-gray-700 hover:text-brand-blue ${!isHovering && 'lg:p-2'}`}
             >
               <LogOut size={16} />
               <span className={`${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>Sair</span>
@@ -266,7 +228,7 @@ const DashboardLayout = () => {
           />
         )}
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-4 md:p-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}

@@ -31,17 +31,20 @@ export const MotionTableContainer = ({ children }: { children: ReactNode }) => {
   );
 };
 
+// Update the interface to include onClick as an optional prop
+interface MotionTableRowProps {
+  children: ReactNode;
+  index?: number;
+  className?: string;
+  onClick?: () => void;
+}
+
 export const MotionTableRow = ({ 
   children, 
   index = 0, 
   className = "",
   onClick
-}: { 
-  children: ReactNode; 
-  index?: number;
-  className?: string;
-  onClick?: () => void;
-}) => {
+}: MotionTableRowProps) => {
   return (
     <motion.tr
       initial={{ opacity: 0, y: 20 }}

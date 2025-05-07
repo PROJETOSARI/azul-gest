@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +28,13 @@ const Login = () => {
       <div className="flex-grow flex items-center justify-center bg-neutral-100">
         <Card className="w-full max-w-sm border border-gray-200 bg-white shadow-lg rounded-xl animate-fade-in">
           <CardHeader className="space-y-2">
+            <div className="flex justify-center mb-4">
+              <img
+                src="/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png"
+                alt="Logo Completa"
+                className="h-12 w-auto"
+              />
+            </div>
             <CardTitle className="text-center text-3xl font-bold text-brand-blue tracking-tight">Entrar</CardTitle>
             <CardDescription className="text-center text-gray-500 text-base">Acesse o sistema com seu e-mail e senha</CardDescription>
           </CardHeader>

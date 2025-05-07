@@ -125,11 +125,21 @@ const DashboardLayout = () => {
         <div className="flex flex-col h-full">
           <div className="p-4 border-b border-gray-200">
             <div className="flex justify-center items-center">
-              <img
-                src="/lovable-uploads/0200b8cc-8400-4de3-bf6f-2e082db350f4.png"
-                alt="Logo"
-                className="h-16 w-auto"
-              />
+              {isHovering || isMobileMenuOpen ? (
+                // Logo completa quando o menu está aberto ou em hover
+                <img
+                  src="/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png"
+                  alt="Logo Completa"
+                  className="h-10 w-auto"
+                />
+              ) : (
+                // Logo ícone quando o menu está fechado
+                <img
+                  src="/lovable-uploads/9c4a204d-1c51-4b2f-906b-3c317974f925.png"
+                  alt="Logo Ícone"
+                  className="h-16 w-auto"
+                />
+              )}
             </div>
           </div>
 

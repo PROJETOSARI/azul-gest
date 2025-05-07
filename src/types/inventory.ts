@@ -40,4 +40,5 @@ export interface InventoryItem {
   lastUpdated: string;
   isOpen: boolean;
   unitPrice: number;
+  initialQuantity: number; // Adicionado o campo de quantidade inicial
 }

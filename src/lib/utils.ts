@@ -25,3 +25,7 @@ export function formatDateTime(dateString: string): string {
     minute: '2-digit'
   }).format(date);
 }
+
+export function formatPercentage(value: number): string {
+  return `${value.toFixed(0)}%`;
+}

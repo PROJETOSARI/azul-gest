@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { LogOut, User, Calculator, Users, ClipboardList, FileText, ShoppingCart, ArrowLeft, Package } from 'lucide-react';
@@ -125,9 +126,9 @@ const DashboardLayout = () => {
           <div className="p-4 border-b border-gray-200">
             <div className="flex justify-center items-center">
               <img
-                src="/placeholder.svg"
+                src="/lovable-uploads/0200b8cc-8400-4de3-bf6f-2e082db350f4.png"
                 alt="Logo"
-                className="h-12 w-auto"
+                className="h-16 w-auto"
               />
             </div>
           </div>

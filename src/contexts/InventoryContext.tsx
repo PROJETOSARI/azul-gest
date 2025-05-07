@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { InventoryItem, InventoryCategory, Department, HistoryRecord } from '../types/inventory';
@@ -17,7 +16,8 @@ const initialInventoryItems: InventoryItem[] = [
     description: "Papel A4 branco para impressão",
     lastUpdated: new Date().toISOString(),
     isOpen: false,
-    unitPrice: 15.99
+    unitPrice: 15.99,
+    initialQuantity: 500  // Adicionada quantidade inicial
   },
   {
     id: uuidv4(),
@@ -31,7 +31,8 @@ const initialInventoryItems: InventoryItem[] = [
     description: "Notebooks Dell Latitude para uso administrativo",
     lastUpdated: new Date().toISOString(),
     isOpen: true,
-    unitPrice: 3500.00
+    unitPrice: 3500.00,
+    initialQuantity: 20  // Adicionada quantidade inicial
   },
   {
     id: uuidv4(),
@@ -45,7 +46,8 @@ const initialInventoryItems: InventoryItem[] = [
     description: "Álcool 70% para limpeza e desinfecção",
     lastUpdated: new Date().toISOString(),
     isOpen: false,
-    unitPrice: 8.50
+    unitPrice: 8.50,
+    initialQuantity: 100  // Adicionada quantidade inicial
   },
   {
     id: uuidv4(),
@@ -59,7 +61,8 @@ const initialInventoryItems: InventoryItem[] = [
     description: "Kit medicamentos básicos para primeiros socorros",
     lastUpdated: new Date().toISOString(),
     isOpen: false,
-    unitPrice: 45.00
+    unitPrice: 45.00,
+    initialQuantity: 250  // Adicionada quantidade inicial
   },
   {
     id: uuidv4(),
@@ -73,7 +76,8 @@ const initialInventoryItems: InventoryItem[] = [
     description: "Cadeiras ergonômicas para escritório",
     lastUpdated: new Date().toISOString(),
     isOpen: false,
-    unitPrice: 299.99
+    unitPrice: 299.99,
+    initialQuantity: 15  // Adicionada quantidade inicial
   }
 ];
 
@@ -175,7 +179,8 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const newItem: InventoryItem = {
       ...item,
       id: newItemId,
-      lastUpdated: timestamp
+      lastUpdated: timestamp,
+      initialQuantity: item.quantity // Definindo a quantidade inicial como a quantidade atual ao criar
     };
     
     setInventoryItems(prevItems => [...prevItems, newItem]);

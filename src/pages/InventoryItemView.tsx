@@ -13,7 +13,9 @@ import {
   DollarSign,
   Clipboard,
   History,
-  Clock
+  Clock,
+  Layers,
+  TrendingDown
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -128,6 +130,13 @@ const InventoryItemView = () => {
   };
 
   const totalValue = item.quantity * item.unitPrice;
+  
+  // Cálculo do valor gasto (quantidade consumida * preço unitário)
+  const consumedQuantity = item.initialQuantity - item.quantity;
+  const consumedValue = consumedQuantity * item.unitPrice;
+  
+  // Cálculo da porcentagem consumida
+  const consumedPercentage = Math.round((consumedQuantity / item.initialQuantity) * 100);
 
   return (
     <div className="max-w-4xl mx-auto pb-8 animate-fade-in">
@@ -264,27 +273,51 @@ const InventoryItemView = () => {
                 <div className="space-y-4">
                   <div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">Quantidades</div>
-                    <div className="flex justify-between items-center mt-1">
-                      <span>Atual:</span>
-                      <span className="text-xl font-bold">{item.quantity}</span>
-                    </div>
-                    <div className="flex justify-between items-center mt-1">
-                      <span>Mínima:</span>
-                      <span>{item.minQuantity}</span>
+                    <div className="grid grid-cols-2 gap-2 mt-1">
+                      <div>
+                        <div className="text-sm">Atual:</div>
+                        <div className="text-xl font-bold">{item.quantity}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm">Inicial:</div>
+                        <div className="text-md">{item.initialQuantity}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm">Consumido:</div>
+                        <div className="text-md flex items-center">
+                          {consumedQuantity} 
+                          <span className="text-xs ml-2 text-gray-500">({consumedPercentage}%)</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm">Mínima:</div>
+                        <div className="text-md">{item.minQuantity}</div>
+                      </div>
                     </div>
                   </div>
                   
                   <Separator />
                   
                   <div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Preços</div>
-                    <div className="flex justify-between items-center mt-1">
-                      <span>Unitário:</span>
-                      <span>{item.unitPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                    </div>
-                    <div className="flex justify-between items-center mt-1">
-                      <span>Total em estoque:</span>
-                      <span className="text-xl font-bold">{totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Valores</div>
+                    <div className="grid grid-cols-2 gap-2 mt-1">
+                      <div>
+                        <div className="text-sm">Unitário:</div>
+                        <div>{item.unitPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm">Total em estoque:</div>
+                        <div className="font-medium">{totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
+                      </div>
+                      <div className="col-span-2 mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
+                        <div className="text-sm flex items-center mb-1">
+                          <TrendingDown className="h-4 w-4 text-red-500 mr-1" />
+                          Valor consumido:
+                        </div>
+                        <div className="text-xl font-bold text-red-600">
+                          {consumedValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

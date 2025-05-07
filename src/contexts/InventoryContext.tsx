@@ -1,15 +1,15 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { InventoryItem, InventoryCategory, Department } from '../types/inventory';
+import { InventoryItem, InventoryCategory, Department, HistoryRecord } from '../types/inventory';
 
-// Sample data
+// Dados de exemplo
 const initialInventoryItems: InventoryItem[] = [
   {
     id: uuidv4(),
     name: "Papel A4",
-    category: "Office Supplies",
-    department: "Administration",
+    category: "Material de Escritório",
+    department: "Administração",
     quantity: 500,
     minQuantity: 100,
     expirationDate: null,
@@ -22,8 +22,8 @@ const initialInventoryItems: InventoryItem[] = [
   {
     id: uuidv4(),
     name: "Notebooks",
-    category: "Electronics",
-    department: "Education",
+    category: "Eletrônicos",
+    department: "Educação",
     quantity: 15,
     minQuantity: 5,
     expirationDate: null,
@@ -36,8 +36,8 @@ const initialInventoryItems: InventoryItem[] = [
   {
     id: uuidv4(),
     name: "Álcool 70%",
-    category: "Cleaning",
-    department: "Health",
+    category: "Limpeza",
+    department: "Saúde",
     quantity: 50,
     minQuantity: 20,
     expirationDate: new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString(),
@@ -50,8 +50,8 @@ const initialInventoryItems: InventoryItem[] = [
   {
     id: uuidv4(),
     name: "Medicamentos Básicos",
-    category: "Medical",
-    department: "Health",
+    category: "Médico",
+    department: "Saúde",
     quantity: 200,
     minQuantity: 50,
     expirationDate: new Date(new Date().setMonth(new Date().getMonth() + 3)).toISOString(),
@@ -64,8 +64,8 @@ const initialInventoryItems: InventoryItem[] = [
   {
     id: uuidv4(),
     name: "Cadeiras de Escritório",
-    category: "Furniture",
-    department: "Administration",
+    category: "Mobiliário",
+    department: "Administração",
     quantity: 10,
     minQuantity: 2,
     expirationDate: null,
@@ -77,23 +77,35 @@ const initialInventoryItems: InventoryItem[] = [
   }
 ];
 
+// Histórico inicial baseado nos itens
+const initialHistoryRecords: HistoryRecord[] = initialInventoryItems.map(item => ({
+  id: uuidv4(),
+  timestamp: item.lastUpdated,
+  action: 'Adicionado',
+  userName: 'Admin',
+  itemId: item.id,
+  details: `Item "${item.name}" adicionado ao sistema`
+}));
+
 interface InventoryContextType {
   inventoryItems: InventoryItem[];
-  addInventoryItem: (item: Omit<InventoryItem, 'id' | 'lastUpdated'>) => void;
-  updateInventoryItem: (item: InventoryItem) => void;
-  deleteInventoryItem: (id: string) => void;
+  historyRecords: HistoryRecord[];
+  addInventoryItem: (item: Omit<InventoryItem, 'id' | 'lastUpdated'>, userName: string) => void;
+  updateInventoryItem: (item: InventoryItem, userName: string) => void;
+  deleteInventoryItem: (id: string, userName: string) => void;
   getInventoryItem: (id: string) => InventoryItem | undefined;
-  toggleItemOpen: (id: string) => void;
+  toggleItemOpen: (id: string, userName: string) => void;
+  getItemHistory: (itemId: string) => HistoryRecord[];
   categories: InventoryCategory[];
   departments: Department[];
   filteredItems: InventoryItem[];
   activeFilters: {
-    category: InventoryCategory | 'All';
-    department: Department | 'All';
+    category: InventoryCategory | 'Todos';
+    department: Department | 'Todos';
     search: string;
   };
-  setFilterCategory: (category: InventoryCategory | 'All') => void;
-  setFilterDepartment: (department: Department | 'All') => void;
+  setFilterCategory: (category: InventoryCategory | 'Todos') => void;
+  setFilterDepartment: (department: Department | 'Todos') => void;
   setSearchTerm: (term: string) => void;
 }
 
@@ -102,43 +114,53 @@ const InventoryContext = createContext<InventoryContextType | undefined>(undefin
 export const useInventory = (): InventoryContextType => {
   const context = useContext(InventoryContext);
   if (!context) {
-    throw new Error('useInventory must be used within an InventoryProvider');
+    throw new Error('useInventory deve ser usado dentro de um InventoryProvider');
   }
   return context;
 };
 
 export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>(initialInventoryItems);
+  const [historyRecords, setHistoryRecords] = useState<HistoryRecord[]>(initialHistoryRecords);
   const [activeFilters, setActiveFilters] = useState({
-    category: 'All' as InventoryCategory | 'All',
-    department: 'All' as Department | 'All',
+    category: 'Todos' as InventoryCategory | 'Todos',
+    department: 'Todos' as Department | 'Todos',
     search: ''
   });
   
   const categories: InventoryCategory[] = [
-    'Office Supplies', 
-    'Electronics', 
-    'Cleaning', 
-    'Furniture', 
-    'Maintenance', 
-    'Medical', 
-    'Other'
+    'Material de Escritório', 
+    'Eletrônicos', 
+    'Limpeza', 
+    'Mobiliário', 
+    'Manutenção', 
+    'Médico', 
+    'Outros'
   ];
 
   const departments: Department[] = [
-    'Administration',
-    'Education',
-    'Health',
-    'Infrastructure',
-    'Social Services',
-    'Finance',
-    'Environment',
-    'Other'
+    'Administração',
+    'Educação',
+    'Saúde',
+    'Infraestrutura',
+    'Serviços Sociais',
+    'Finanças',
+    'Meio Ambiente',
+    'Outros'
   ];
 
+  const addHistoryRecord = (record: Omit<HistoryRecord, 'id'>) => {
+    const newRecord: HistoryRecord = {
+      ...record,
+      id: uuidv4()
+    };
+    
+    setHistoryRecords(prev => [newRecord, ...prev]);
+  };
+
   const filteredItems = inventoryItems.filter(item => {
-    const matchesCategory = activeFilters.category === 'All' || item.category === activeFilters.category;
-    const matchesDepartment = activeFilters.department === 'All' || item.department === activeFilters.department;
+    const matchesCategory = activeFilters.category === 'Todos' || item.category === activeFilters.category;
+    const matchesDepartment = activeFilters.department === 'Todos' || item.department === activeFilters.department;
     const matchesSearch = activeFilters.search === '' || 
       item.name.toLowerCase().includes(activeFilters.search.toLowerCase()) ||
       item.description.toLowerCase().includes(activeFilters.search.toLowerCase());
@@ -146,47 +168,105 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return matchesCategory && matchesDepartment && matchesSearch;
   });
 
-  const addInventoryItem = (item: Omit<InventoryItem, 'id' | 'lastUpdated'>) => {
+  const addInventoryItem = (item: Omit<InventoryItem, 'id' | 'lastUpdated'>, userName: string) => {
+    const timestamp = new Date().toISOString();
+    const newItemId = uuidv4();
+    
     const newItem: InventoryItem = {
       ...item,
-      id: uuidv4(),
-      lastUpdated: new Date().toISOString()
+      id: newItemId,
+      lastUpdated: timestamp
     };
     
     setInventoryItems(prevItems => [...prevItems, newItem]);
+    
+    // Adicionar ao histórico
+    addHistoryRecord({
+      timestamp,
+      action: 'Adicionado',
+      userName,
+      itemId: newItemId,
+      details: `Item "${item.name}" adicionado ao inventário`
+    });
   };
 
-  const updateInventoryItem = (updatedItem: InventoryItem) => {
+  const updateInventoryItem = (updatedItem: InventoryItem, userName: string) => {
+    const timestamp = new Date().toISOString();
+    const oldItem = inventoryItems.find(item => item.id === updatedItem.id);
+    
     setInventoryItems(prevItems => 
       prevItems.map(item => 
         item.id === updatedItem.id 
-          ? { ...updatedItem, lastUpdated: new Date().toISOString() } 
+          ? { ...updatedItem, lastUpdated: timestamp } 
           : item
       )
     );
+    
+    // Adicionar ao histórico
+    addHistoryRecord({
+      timestamp,
+      action: 'Atualizado',
+      userName,
+      itemId: updatedItem.id,
+      details: `Item "${updatedItem.name}" atualizado`
+    });
   };
 
-  const deleteInventoryItem = (id: string) => {
-    setInventoryItems(prevItems => prevItems.filter(item => item.id !== id));
+  const deleteInventoryItem = (id: string, userName: string) => {
+    const timestamp = new Date().toISOString();
+    const itemToDelete = inventoryItems.find(item => item.id === id);
+    
+    if (itemToDelete) {
+      setInventoryItems(prevItems => prevItems.filter(item => item.id !== id));
+      
+      // Adicionar ao histórico
+      addHistoryRecord({
+        timestamp,
+        action: 'Removido',
+        userName,
+        itemId: id,
+        details: `Item "${itemToDelete.name}" removido do inventário`
+      });
+    }
   };
 
   const getInventoryItem = (id: string) => {
     return inventoryItems.find(item => item.id === id);
   };
 
-  const toggleItemOpen = (id: string) => {
-    setInventoryItems(prevItems => 
-      prevItems.map(item => 
-        item.id === id ? { ...item, isOpen: !item.isOpen } : item
-      )
-    );
+  const toggleItemOpen = (id: string, userName: string) => {
+    const timestamp = new Date().toISOString();
+    const item = inventoryItems.find(item => item.id === id);
+    
+    if (item) {
+      setInventoryItems(prevItems => 
+        prevItems.map(item => 
+          item.id === id ? { ...item, isOpen: !item.isOpen, lastUpdated: timestamp } : item
+        )
+      );
+      
+      // Adicionar ao histórico
+      addHistoryRecord({
+        timestamp,
+        action: item.isOpen ? 'Fechado' : 'Aberto',
+        userName,
+        itemId: id,
+        details: `Item "${item.name}" ${item.isOpen ? 'fechado' : 'aberto'}`
+      });
+    }
   };
 
-  const setFilterCategory = (category: InventoryCategory | 'All') => {
+  const getItemHistory = (itemId: string) => {
+    return historyRecords.filter(record => record.itemId === itemId).sort((a, b) => {
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
+  };
+
+  const setFilterCategory = (category: InventoryCategory | 'Todos') => {
     setActiveFilters(prev => ({ ...prev, category }));
   };
 
-  const setFilterDepartment = (department: Department | 'All') => {
+  const setFilterDepartment = (department: Department | 'Todos') => {
     setActiveFilters(prev => ({ ...prev, department }));
   };
 
@@ -198,11 +278,13 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     <InventoryContext.Provider 
       value={{ 
         inventoryItems,
+        historyRecords,
         addInventoryItem,
         updateInventoryItem,
         deleteInventoryItem,
         getInventoryItem,
         toggleItemOpen,
+        getItemHistory,
         categories,
         departments,
         filteredItems,

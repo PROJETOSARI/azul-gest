@@ -1,22 +1,31 @@
 
 export type InventoryCategory = 
-  | 'Office Supplies'
-  | 'Electronics'
-  | 'Cleaning'
-  | 'Furniture'
-  | 'Maintenance'
-  | 'Medical'
-  | 'Other';
+  | 'Material de Escritório'
+  | 'Eletrônicos'
+  | 'Limpeza'
+  | 'Mobiliário'
+  | 'Manutenção'
+  | 'Médico'
+  | 'Outros';
 
 export type Department = 
-  | 'Administration'
-  | 'Education'
-  | 'Health'
-  | 'Infrastructure'
-  | 'Social Services'
-  | 'Finance'
-  | 'Environment'
-  | 'Other';
+  | 'Administração'
+  | 'Educação'
+  | 'Saúde'
+  | 'Infraestrutura'
+  | 'Serviços Sociais'
+  | 'Finanças'
+  | 'Meio Ambiente'
+  | 'Outros';
+
+export interface HistoryRecord {
+  id: string;
+  timestamp: string;
+  action: 'Adicionado' | 'Atualizado' | 'Removido' | 'Aberto' | 'Fechado';
+  userName: string;
+  itemId: string;
+  details: string;
+}
 
 export interface InventoryItem {
   id: string;

@@ -1,6 +1,8 @@
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useInventory } from '@/contexts/InventoryContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -33,7 +35,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
 import { ArrowLeft } from 'lucide-react';
-import { InventoryItem } from '@/types/inventory';
+import { InventoryItem, InventoryCategory, Department } from '@/types/inventory';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
@@ -55,6 +57,7 @@ const InventoryForm = () => {
   const isEditing = Boolean(id);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   
   const { 
     getInventoryItem,
@@ -94,6 +97,15 @@ const InventoryForm = () => {
   }, [isEditing, inventoryItem, navigate, toast]);
 
   const onSubmit = (data: FormValues) => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Você precisa estar autenticado para realizar esta ação",
+      });
+      return;
+    }
+
     if (isEditing && inventoryItem) {
       const updatedItem: InventoryItem = {
         id: inventoryItem.id,
@@ -110,7 +122,7 @@ const InventoryForm = () => {
         unitPrice: Number(data.unitPrice),
       };
       
-      updateInventoryItem(updatedItem);
+      updateInventoryItem(updatedItem, user.name);
       toast({
         title: "Item atualizado",
         description: `${data.name} foi atualizado com sucesso`,
@@ -130,7 +142,7 @@ const InventoryForm = () => {
         unitPrice: Number(data.unitPrice),
       };
       
-      addInventoryItem(newItem);
+      addInventoryItem(newItem, user.name);
       toast({
         title: "Item adicionado",
         description: `${data.name} foi adicionado ao inventário`,

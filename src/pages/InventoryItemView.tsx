@@ -11,8 +11,11 @@ import {
   ArrowLeft,
   AlertCircle,
   DollarSign,
-  Clipboard
+  Clipboard,
+  History,
+  Clock
 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -31,19 +34,28 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from '@/components/ui/badge';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatDateTime } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
 
 const InventoryItemView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getInventoryItem, deleteInventoryItem, toggleItemOpen } = useInventory();
+  const { user } = useAuth();
+  const { getInventoryItem, deleteInventoryItem, toggleItemOpen, getItemHistory } = useInventory();
   const { toast } = useToast();
   const [openDialog, setOpenDialog] = React.useState(false);
 
   const item = getInventoryItem(id || '');
+  const historyRecords = id ? getItemHistory(id) : [];
 
   if (!item) {
     return (
@@ -88,34 +100,38 @@ const InventoryItemView = () => {
     if (item.quantity <= 0) {
       return <Badge variant="destructive">Sem estoque</Badge>;
     } else if (item.quantity < item.minQuantity) {
-      return <Badge className="bg-yellow-500 text-white">Baixo estoque</Badge>;
+      return <Badge className="bg-yellow-500 text-white">Estoque baixo</Badge>;
     } else {
       return <Badge className="bg-green-500 text-white">Estoque normal</Badge>;
     }
   };
 
   const handleDelete = () => {
-    deleteInventoryItem(item.id);
-    toast({
-      title: "Item removido",
-      description: `${item.name} foi removido do inventário`,
-    });
-    navigate("/dashboard/inventory");
+    if (user) {
+      deleteInventoryItem(item.id, user.name);
+      toast({
+        title: "Item removido",
+        description: `${item.name} foi removido do inventário`,
+      });
+      navigate("/dashboard/inventory");
+    }
   };
 
   const handleToggleOpen = () => {
-    toggleItemOpen(item.id);
-    toast({
-      title: item.isOpen ? "Item fechado" : "Item aberto",
-      description: `${item.name} foi ${item.isOpen ? 'fechado' : 'aberto'} no inventário`,
-    });
+    if (user) {
+      toggleItemOpen(item.id, user.name);
+      toast({
+        title: item.isOpen ? "Item fechado" : "Item aberto",
+        description: `${item.name} foi ${item.isOpen ? 'fechado' : 'aberto'} no inventário`,
+      });
+    }
   };
 
   const totalValue = item.quantity * item.unitPrice;
 
   return (
     <div className="max-w-4xl mx-auto pb-8 animate-fade-in">
-      {/* Header with back button and actions */}
+      {/* Cabeçalho com botão de voltar e ações */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
         <div className="flex items-center">
           <Button 
@@ -170,130 +186,186 @@ const InventoryItemView = () => {
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="space-y-6">
-        {/* Basic Info Card */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-medium">Informações Básicas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Categoria</div>
-                  <div className="font-medium">{item.category}</div>
-                </div>
-                
-                <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Departamento</div>
-                  <div className="font-medium">{item.department}</div>
-                </div>
-
-                <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Localização</div>
-                  <div className="flex items-center font-medium">
-                    <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                    {item.location}
+      {/* Conteúdo principal */}
+      <Tabs defaultValue="info">
+        <TabsList className="mb-6">
+          <TabsTrigger value="info">Informações</TabsTrigger>
+          <TabsTrigger value="history">Histórico</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="info" className="space-y-6">
+          {/* Card de informações básicas */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-medium">Informações Gerais</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Categoria</div>
+                      <div className="font-medium">{item.category}</div>
+                    </div>
+                    
+                    <div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Departamento</div>
+                      <div className="font-medium">{item.department}</div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Localização</div>
+                    <div className="flex items-center font-medium">
+                      <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                      {item.location}
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Status</div>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {renderQuantityStatus()}
+                        {item.isOpen && <Badge className="bg-blue-500 text-white">Aberto</Badge>}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Data de Vencimento</div>
+                      <div className="flex items-center mt-1">
+                        {item.expirationDate && <Calendar className="h-4 w-4 mr-2 text-gray-500" />}
+                        {renderExpirationBadge()}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Última Atualização</div>
+                    <div className="font-medium">{formatDate(item.lastUpdated)}</div>
                   </div>
                 </div>
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Status</div>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {renderQuantityStatus()}
-                    {item.isOpen && <Badge className="bg-blue-500 text-white">Aberto</Badge>}
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-medium flex items-center">
+                  <DollarSign className="h-5 w-5 mr-2" /> Valores e Quantidades
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Quantidades</div>
+                    <div className="flex justify-between items-center mt-1">
+                      <span>Atual:</span>
+                      <span className="text-xl font-bold">{item.quantity}</span>
+                    </div>
+                    <div className="flex justify-between items-center mt-1">
+                      <span>Mínima:</span>
+                      <span>{item.minQuantity}</span>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Preços</div>
+                    <div className="flex justify-between items-center mt-1">
+                      <span>Unitário:</span>
+                      <span>{item.unitPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                    </div>
+                    <div className="flex justify-between items-center mt-1">
+                      <span>Total em estoque:</span>
+                      <span className="text-xl font-bold">{totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                    </div>
                   </div>
                 </div>
-                
-                <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Data de Vencimento</div>
-                  <div className="flex items-center mt-1">
-                    {item.expirationDate && <Calendar className="h-4 w-4 mr-2 text-gray-500" />}
-                    {renderExpirationBadge()}
-                  </div>
-                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-                <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Última Atualização</div>
-                  <div className="font-medium">{formatDate(item.lastUpdated)}</div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Stock and Value Cards in flex layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Stock Card */}
+          {/* Card de descrição */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium flex items-center">
-                <Package className="h-5 w-5 mr-2" /> Estoque
+                <Clipboard className="h-5 w-5 mr-2" /> Descrição
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Quantidade atual</span>
-                  <span className="text-2xl font-semibold">{item.quantity}</span>
-                </div>
-                
-                <Separator />
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Quantidade mínima</span>
-                  <span className="text-lg">{item.minQuantity}</span>
-                </div>
-              </div>
+              <p className="text-gray-700 dark:text-gray-300">{item.description || "Sem descrição disponível."}</p>
             </CardContent>
-            <CardFooter className="pt-0 pb-4 px-6">
-              <div className="w-full">
-                <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Status</div>
-                <div>{renderQuantityStatus()}</div>
-              </div>
-            </CardFooter>
           </Card>
-
-          {/* Value Card */}
+        </TabsContent>
+        
+        <TabsContent value="history">
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium flex items-center">
-                <DollarSign className="h-5 w-5 mr-2" /> Valores
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <History className="h-5 w-5 mr-2" />
+                Histórico de Alterações
               </CardTitle>
+              <CardDescription>
+                Registro completo de todas as alterações feitas neste item
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Valor unitário</span>
-                  <span className="font-medium text-lg">{item.unitPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                </div>
-                
-                <Separator />
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Valor total em estoque</span>
-                  <span className="text-2xl font-semibold">{totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                </div>
+              <div className="space-y-6">
+                {historyRecords.length > 0 ? (
+                  historyRecords.map(record => (
+                    <div key={record.id} className="flex gap-4 pb-6 border-b last:border-0">
+                      <div className={`mt-0.5 p-2 rounded-full ${
+                        record.action === 'Adicionado' ? 'bg-green-100' : 
+                        record.action === 'Atualizado' ? 'bg-blue-100' : 
+                        record.action === 'Removido' ? 'bg-red-100' :
+                        record.action === 'Aberto' ? 'bg-purple-100' : 'bg-orange-100'
+                      }`}>
+                        {record.action === 'Adicionado' && <Package size={16} className="text-green-600" />}
+                        {record.action === 'Atualizado' && <Edit size={16} className="text-blue-600" />}
+                        {record.action === 'Removido' && <Trash2 size={16} className="text-red-600" />}
+                        {record.action === 'Aberto' && <Package size={16} className="text-purple-600" />}
+                        {record.action === 'Fechado' && <Package size={16} className="text-orange-600" />}
+                      </div>
+                      
+                      <div className="flex-1">
+                        <div className="flex justify-between">
+                          <div>
+                            <div className="font-medium">{record.action}</div>
+                            <div className="text-sm text-gray-500">
+                              Por: {record.userName}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm text-gray-500">
+                              {formatDateTime(record.timestamp)}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-2 text-sm">
+                          {record.details}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p>Nenhum registro de atividade encontrado</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Description Card */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-medium flex items-center">
-              <Clipboard className="h-5 w-5 mr-2" /> Descrição
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-700 dark:text-gray-300">{item.description || "Sem descrição disponível."}</p>
-          </CardContent>
-        </Card>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

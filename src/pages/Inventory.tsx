@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Archive, Plus, Filter, Search, AlertCircle, Clock, Package, Eye } from 'lucide-react';
@@ -54,14 +53,14 @@ const Inventory = () => {
   const renderExpirationBadge = (item: InventoryItem) => {
     if (!item.expirationDate) return null;
     
-    const daysUntil = getDaysUntilExpiration(item.expirationDate);
+    const expirationTime = new Date(item.expirationDate).getTime();
+    const currentTime = new Date().getTime();
+    const daysUntil = Math.floor((expirationTime - currentTime) / (1000 * 3600 * 24));
     
-    if (daysUntil !== null) {
-      if (daysUntil < 0) {
-        return <Badge variant="destructive" className="ml-2">Expirado</Badge>;
-      } else if (daysUntil < 30) {
-        return <Badge variant="warning" className="ml-2 bg-yellow-500">Expira em {daysUntil} dias</Badge>;
-      }
+    if (daysUntil < 0) {
+      return <Badge variant="destructive">Expirado</Badge>;
+    } else if (daysUntil < 30) {
+      return <Badge className="bg-yellow-500 text-white">Expira em {daysUntil} dias</Badge>;
     }
     
     return null;
@@ -71,7 +70,7 @@ const Inventory = () => {
     if (item.quantity <= 0) {
       return <Badge variant="destructive">Sem estoque</Badge>;
     } else if (item.quantity < item.minQuantity) {
-      return <Badge variant="warning" className="bg-yellow-500">Baixo estoque</Badge>;
+      return <Badge className="bg-yellow-500 text-white">Baixo estoque</Badge>;
     } else {
       return <Badge variant="secondary" className="bg-green-500 text-white">Estoque normal</Badge>;
     }

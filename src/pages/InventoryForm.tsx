@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useInventory } from '@/contexts/InventoryContext';
@@ -96,23 +95,48 @@ const InventoryForm = () => {
 
   const onSubmit = (data: FormValues) => {
     if (isEditing && inventoryItem) {
-      updateInventoryItem({
-        ...data,
+      const updatedItem: InventoryItem = {
         id: inventoryItem.id,
+        name: data.name,
+        category: data.category as InventoryCategory,
+        department: data.department as Department,
+        quantity: Number(data.quantity),
+        minQuantity: Number(data.minQuantity),
+        expirationDate: data.expirationDate,
+        location: data.location,
+        description: data.description,
         lastUpdated: new Date().toISOString(),
-      });
+        isOpen: data.isOpen,
+        unitPrice: Number(data.unitPrice),
+      };
+      
+      updateInventoryItem(updatedItem);
       toast({
         title: "Item atualizado",
         description: `${data.name} foi atualizado com sucesso`,
       });
+      navigate('/dashboard/inventory');
     } else {
-      addInventoryItem(data);
+      const newItem: Omit<InventoryItem, 'id' | 'lastUpdated'> = {
+        name: data.name,
+        category: data.category as InventoryCategory,
+        department: data.department as Department,
+        quantity: Number(data.quantity),
+        minQuantity: Number(data.minQuantity),
+        expirationDate: data.expirationDate,
+        location: data.location,
+        description: data.description,
+        isOpen: data.isOpen,
+        unitPrice: Number(data.unitPrice),
+      };
+      
+      addInventoryItem(newItem);
       toast({
         title: "Item adicionado",
         description: `${data.name} foi adicionado ao inventário`,
       });
+      navigate('/dashboard/inventory');
     }
-    navigate('/dashboard/inventory');
   };
 
   return (

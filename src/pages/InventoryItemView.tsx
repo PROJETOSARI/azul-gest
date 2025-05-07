@@ -10,7 +10,8 @@ import {
   Trash2, 
   ArrowLeft,
   AlertCircle,
-  DollarSign
+  DollarSign,
+  Clipboard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -76,7 +77,7 @@ const InventoryItemView = () => {
       if (daysUntil < 0) {
         return <Badge variant="destructive">Expirado</Badge>;
       } else if (daysUntil < 30) {
-        return <Badge variant="warning" className="bg-yellow-500">Expira em {daysUntil} dias</Badge>;
+        return <Badge className="bg-yellow-500 text-white">Expira em {daysUntil} dias</Badge>;
       } else {
         return <Badge variant="outline">Vence em {formatDate(item.expirationDate)}</Badge>;
       }
@@ -87,9 +88,9 @@ const InventoryItemView = () => {
     if (item.quantity <= 0) {
       return <Badge variant="destructive">Sem estoque</Badge>;
     } else if (item.quantity < item.minQuantity) {
-      return <Badge variant="warning" className="bg-yellow-500">Baixo estoque</Badge>;
+      return <Badge className="bg-yellow-500 text-white">Baixo estoque</Badge>;
     } else {
-      return <Badge variant="secondary" className="bg-green-500 text-white">Estoque normal</Badge>;
+      return <Badge className="bg-green-500 text-white">Estoque normal</Badge>;
     }
   };
 
@@ -113,8 +114,9 @@ const InventoryItemView = () => {
   const totalValue = item.quantity * item.unitPrice;
 
   return (
-    <div className="animate-fade-in space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="max-w-4xl mx-auto pb-8 animate-fade-in">
+      {/* Header with back button and actions */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
         <div className="flex items-center">
           <Button 
             variant="ghost" 
@@ -124,26 +126,31 @@ const InventoryItemView = () => {
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
           </Button>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Detalhes do Item</h1>
+          <h1 className="text-2xl font-bold">{item.name}</h1>
         </div>
-        <div className="flex space-x-2">
+        
+        <div className="flex flex-wrap gap-2">
           <Button 
-            variant="outline" 
+            variant={item.isOpen ? "outline" : "default"}
             onClick={handleToggleOpen}
+            size="sm"
           >
             {item.isOpen ? 'Fechar Item' : 'Abrir Item'}
           </Button>
+          
           <Button 
             variant="outline"
+            size="sm"
             asChild
           >
             <Link to={`/dashboard/inventory/edit/${item.id}`}>
               <Edit className="h-4 w-4 mr-1" /> Editar
             </Link>
           </Button>
+          
           <Dialog open={openDialog} onOpenChange={setOpenDialog}>
             <DialogTrigger asChild>
-              <Button variant="destructive">
+              <Button variant="destructive" size="sm">
                 <Trash2 className="h-4 w-4 mr-1" /> Remover
               </Button>
             </DialogTrigger>
@@ -163,115 +170,129 @@ const InventoryItemView = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-xl">{item.name}</CardTitle>
-            <CardDescription>{item.description}</CardDescription>
+      {/* Main content */}
+      <div className="space-y-6">
+        {/* Basic Info Card */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-medium">Informações Básicas</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
                 <div>
-                  <div className="text-sm font-medium">Categoria</div>
-                  <Badge variant="outline" className="mt-1">{item.category}</Badge>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Categoria</div>
+                  <div className="font-medium">{item.category}</div>
                 </div>
+                
                 <div>
-                  <div className="text-sm font-medium">Departamento</div>
-                  <Badge variant="outline" className="mt-1">{item.department}</Badge>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Departamento</div>
+                  <div className="font-medium">{item.department}</div>
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Localização</div>
+                  <div className="flex items-center font-medium">
+                    <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                    {item.location}
+                  </div>
                 </div>
               </div>
 
-              <Separator />
-
-              <div>
-                <div className="text-sm font-medium mb-1">Localização</div>
-                <div className="flex items-center text-gray-700 dark:text-gray-300">
-                  <MapPin className="h-4 w-4 mr-1 text-gray-500" />
-                  {item.location}
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-3">
                 <div>
-                  <div className="text-sm font-medium mb-1">Status</div>
-                  <div className="flex items-center space-x-2">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Status</div>
+                  <div className="flex flex-wrap gap-2 mt-1">
                     {renderQuantityStatus()}
                     {item.isOpen && <Badge className="bg-blue-500 text-white">Aberto</Badge>}
                   </div>
                 </div>
+                
                 <div>
-                  <div className="text-sm font-medium mb-1">Data de Vencimento</div>
-                  <div className="flex items-center">
-                    {item.expirationDate && (
-                      <Calendar className="h-4 w-4 mr-1 text-gray-500" />
-                    )}
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Data de Vencimento</div>
+                  <div className="flex items-center mt-1">
+                    {item.expirationDate && <Calendar className="h-4 w-4 mr-2 text-gray-500" />}
                     {renderExpirationBadge()}
                   </div>
                 </div>
-              </div>
 
-              <Separator />
-
-              <div>
-                <div className="text-sm font-medium mb-1">Última Atualização</div>
-                <div className="text-gray-700 dark:text-gray-300">
-                  {formatDate(item.lastUpdated)}
+                <div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Última Atualização</div>
+                  <div className="font-medium">{formatDate(item.lastUpdated)}</div>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
+        {/* Stock and Value Cards in flex layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Stock Card */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Quantidades</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium flex items-center">
+                <Package className="h-5 w-5 mr-2" /> Estoque
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <div className="text-sm">Quantidade atual</div>
-                  <div className="font-medium text-lg">{item.quantity}</div>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Quantidade atual</span>
+                  <span className="text-2xl font-semibold">{item.quantity}</span>
                 </div>
+                
+                <Separator />
+                
                 <div className="flex justify-between items-center">
-                  <div className="text-sm">Quantidade mínima</div>
-                  <div className="text-gray-700 dark:text-gray-300">{item.minQuantity}</div>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="text-sm">Status</div>
-                  <div>{renderQuantityStatus()}</div>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Quantidade mínima</span>
+                  <span className="text-lg">{item.minQuantity}</span>
                 </div>
               </div>
             </CardContent>
+            <CardFooter className="pt-0 pb-4 px-6">
+              <div className="w-full">
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Status</div>
+                <div>{renderQuantityStatus()}</div>
+              </div>
+            </CardFooter>
           </Card>
 
+          {/* Value Card */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Valores</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium flex items-center">
+                <DollarSign className="h-5 w-5 mr-2" /> Valores
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <div className="text-sm">Valor unitário</div>
-                  <div className="flex items-center">
-                    <DollarSign className="h-4 w-4 mr-1 text-gray-500" />
-                    <span>{item.unitPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                  </div>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Valor unitário</span>
+                  <span className="font-medium text-lg">{item.unitPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                 </div>
+                
+                <Separator />
+                
                 <div className="flex justify-between items-center">
-                  <div className="text-sm">Valor total em estoque</div>
-                  <div className="flex items-center font-semibold">
-                    <DollarSign className="h-4 w-4 mr-1 text-gray-500" />
-                    <span>{totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                  </div>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Valor total em estoque</span>
+                  <span className="text-2xl font-semibold">{totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Description Card */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-medium flex items-center">
+              <Clipboard className="h-5 w-5 mr-2" /> Descrição
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-700 dark:text-gray-300">{item.description || "Sem descrição disponível."}</p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

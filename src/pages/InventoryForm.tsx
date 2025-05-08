@@ -1,298 +1,324 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { useInventory } from '@/contexts/InventoryContext';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { InventoryCategory, Department } from '@/types/inventory';
+import { useInventory } from '@/contexts/InventoryContext';
 
 const InventoryForm = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { 
-    addInventoryItem, 
-    updateInventoryItem, 
-    getInventoryItem,
-    categories,
-    departments
-  } = useInventory();
-
-  // Initialize form with empty values
-  const [formData, setFormData] = useState<Omit<any, "id">>({
+  const { addItemToInventory, updateInventoryItem, getInventoryItemById } = useInventory();
+  
+  const [formData, setFormData] = useState({
     name: '',
-    category: categories[0],
-    department: departments[0],
-    quantity: 0,
-    minQuantity: 0,
-    expirationDate: null,
-    location: '',
     description: '',
-    isOpen: false,
-    unitPrice: 0,
+    category: '',
+    location: '',
+    quantity: 0,
     initialQuantity: 0,
+    unit: '',
+    minimumQuantity: 0,
+    acquisitionDate: '',
+    lastUpdate: new Date().toISOString().split('T')[0],
+    responsible: '',
+    status: 'Disponível',
+    notes: ''
   });
 
-  const [isLoading, setIsLoading] = useState(false);
-  const isEditMode = !!id;
-  
-  // Load item data if in edit mode
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
-    if (isEditMode) {
-      const item = getInventoryItem(id);
+    if (id) {
+      const item = getInventoryItemById(id);
       if (item) {
-        setFormData({
-          name: item.name,
-          category: item.category,
-          department: item.department,
-          quantity: item.quantity,
-          minQuantity: item.minQuantity,
-          expirationDate: item.expirationDate,
-          location: item.location,
-          description: item.description,
-          isOpen: item.isOpen,
-          unitPrice: item.unitPrice,
-          initialQuantity: item.initialQuantity,
-        });
+        // Convert dates to YYYY-MM-DD format for input fields
+        const formattedItem = {
+          ...item,
+          acquisitionDate: item.acquisitionDate ? new Date(item.acquisitionDate).toISOString().split('T')[0] : '',
+          lastUpdate: item.lastUpdate ? new Date(item.lastUpdate).toISOString().split('T')[0] : ''
+        };
+        
+        setFormData(formattedItem);
       }
     }
-  }, [id, isEditMode, getInventoryItem]);
+  }, [id, getInventoryItemById]);
 
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      if (isEditMode) {
-        updateInventoryItem({
-          ...formData,
-          id: id as string,
-          lastUpdated: new Date().toISOString(),
-        }, 'Admin');
-        
-        toast({
-          title: "Item atualizado",
-          description: `O item ${formData.name} foi atualizado com sucesso.`,
-        });
-      } else {
-        addInventoryItem(formData, 'Admin');
-        
-        toast({
-          title: "Item adicionado",
-          description: `O item ${formData.name} foi adicionado ao inventário.`,
-        });
-      }
-      
-      // Navigate back to inventory list
-      navigate('/dashboard/inventory');
-    } catch (error) {
-      console.error('Erro ao salvar item:', error);
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: `Não foi possível ${isEditMode ? 'atualizar' : 'adicionar'} o item.`,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Handle input changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'number' ? Number(value) : value,
-    }));
+    // For number inputs, convert the string value to a number
+    if (type === 'number') {
+      setFormData(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
-  // Handle select changes
   const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const currentDate = new Date().toISOString();
+
+      // Make sure initialQuantity is set properly
+      let updatedData = { ...formData };
+      
+      // If this is a new item, set initialQuantity equal to quantity
+      if (!id) {
+        updatedData.initialQuantity = formData.quantity;
+      }
+      
+      // Set the last update timestamp
+      updatedData.lastUpdate = currentDate;
+
+      if (id) {
+        await updateInventoryItem(id, updatedData);
+        toast({
+          title: "Item atualizado",
+          description: "O item foi atualizado com sucesso.",
+        });
+      } else {
+        await addItemToInventory(updatedData);
+        toast({
+          title: "Item adicionado",
+          description: "O novo item foi adicionado com sucesso.",
+        });
+      }
+      navigate('/dashboard/inventory');
+    } catch (error) {
+      console.error("Erro ao salvar o item:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao salvar o item. Por favor, tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const goBack = () => {
+    navigate(-1);
   };
 
   return (
-    <div className="container p-6 mx-auto">
-      <h1 className="text-3xl font-bold mb-6">
-        {isEditMode ? 'Editar Item' : 'Adicionar Novo Item'}
-      </h1>
+    <div className="container max-w-2xl mx-auto">
+      <Button 
+        variant="ghost" 
+        onClick={goBack} 
+        className="mb-4 inline-flex items-center text-gray-600 hover:text-gray-800"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Voltar
+      </Button>
       
-      <div className="bg-card rounded-lg p-6 shadow-sm">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome do Item</Label>
-              <Input
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Nome do item"
-                required
-              />
-            </div>
-            
-            {/* Category */}
-            <div className="space-y-2">
-              <Label htmlFor="category">Categoria</Label>
-              <Select 
-                value={formData.category} 
-                onValueChange={(value) => handleSelectChange('category', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Department */}
-            <div className="space-y-2">
-              <Label htmlFor="department">Departamento</Label>
-              <Select 
-                value={formData.department} 
-                onValueChange={(value) => handleSelectChange('department', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um departamento" />
-                </SelectTrigger>
-                <SelectContent>
-                  {departments.map((department) => (
-                    <SelectItem key={department} value={department}>
-                      {department}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Quantity */}
-            <div className="space-y-2">
-              <Label htmlFor="quantity">Quantidade</Label>
-              <Input
-                id="quantity"
-                name="quantity"
-                type="number"
-                value={formData.quantity}
-                onChange={handleChange}
-                min={0}
-                required
-              />
-            </div>
-            
-            {/* Min Quantity */}
-            <div className="space-y-2">
-              <Label htmlFor="minQuantity">Quantidade Mínima</Label>
-              <Input
-                id="minQuantity"
-                name="minQuantity"
-                type="number"
-                value={formData.minQuantity}
-                onChange={handleChange}
-                min={0}
-                required
-              />
-            </div>
-            
-            {/* Unit Price */}
-            <div className="space-y-2">
-              <Label htmlFor="unitPrice">Preço Unitário (R$)</Label>
-              <Input
-                id="unitPrice"
-                name="unitPrice"
-                type="number"
-                value={formData.unitPrice}
-                onChange={handleChange}
-                min={0}
-                step="0.01"
-                required
-              />
-            </div>
-            
-            {/* Initial Quantity - only shown when adding new items */}
-            {!isEditMode && (
-              <div className="space-y-2">
-                <Label htmlFor="initialQuantity">Quantidade Inicial</Label>
+      <Card>
+        <CardHeader>
+          <CardTitle>{id ? 'Editar Item' : 'Adicionar Novo Item'}</CardTitle>
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium mb-1">Nome</label>
                 <Input
-                  id="initialQuantity"
-                  name="initialQuantity"
-                  type="number"
-                  value={formData.initialQuantity}
-                  onChange={handleChange}
-                  min={0}
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
-            )}
+              
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium mb-1">Categoria</label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) => handleSelectChange('category', value)}
+                >
+                  <SelectTrigger id="category">
+                    <SelectValue placeholder="Selecione uma categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Papelaria">Papelaria</SelectItem>
+                    <SelectItem value="Escritório">Escritório</SelectItem>
+                    <SelectItem value="Limpeza">Limpeza</SelectItem>
+                    <SelectItem value="Informática">Informática</SelectItem>
+                    <SelectItem value="Móveis">Móveis</SelectItem>
+                    <SelectItem value="Eletrônicos">Eletrônicos</SelectItem>
+                    <SelectItem value="Outros">Outros</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label htmlFor="quantity" className="block text-sm font-medium mb-1">Quantidade</label>
+                <Input
+                  id="quantity"
+                  name="quantity"
+                  type="number"
+                  min="0"
+                  value={formData.quantity}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              
+              {id && (
+                <div>
+                  <label htmlFor="initialQuantity" className="block text-sm font-medium mb-1">Quantidade Inicial</label>
+                  <Input
+                    id="initialQuantity"
+                    name="initialQuantity"
+                    type="number"
+                    min="0"
+                    value={formData.initialQuantity}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+              )}
+              
+              <div>
+                <label htmlFor="unit" className="block text-sm font-medium mb-1">Unidade</label>
+                <Select
+                  value={formData.unit}
+                  onValueChange={(value) => handleSelectChange('unit', value)}
+                >
+                  <SelectTrigger id="unit">
+                    <SelectValue placeholder="Selecione uma unidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Unidade">Unidade</SelectItem>
+                    <SelectItem value="Caixa">Caixa</SelectItem>
+                    <SelectItem value="Pacote">Pacote</SelectItem>
+                    <SelectItem value="Resma">Resma</SelectItem>
+                    <SelectItem value="Litro">Litro</SelectItem>
+                    <SelectItem value="Metro">Metro</SelectItem>
+                    <SelectItem value="Kg">Kg</SelectItem>
+                    <SelectItem value="Peça">Peça</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label htmlFor="minimumQuantity" className="block text-sm font-medium mb-1">Quantidade Mínima</label>
+                <Input
+                  id="minimumQuantity"
+                  name="minimumQuantity"
+                  type="number"
+                  min="0"
+                  value={formData.minimumQuantity}
+                  onChange={handleInputChange}
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="location" className="block text-sm font-medium mb-1">Localização</label>
+                <Input
+                  id="location"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="acquisitionDate" className="block text-sm font-medium mb-1">Data de Aquisição</label>
+                <Input
+                  id="acquisitionDate"
+                  name="acquisitionDate"
+                  type="date"
+                  value={formData.acquisitionDate}
+                  onChange={handleInputChange}
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="responsible" className="block text-sm font-medium mb-1">Responsável</label>
+                <Input
+                  id="responsible"
+                  name="responsible"
+                  value={formData.responsible}
+                  onChange={handleInputChange}
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="status" className="block text-sm font-medium mb-1">Status</label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => handleSelectChange('status', value)}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="Selecione um status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Disponível">Disponível</SelectItem>
+                    <SelectItem value="Baixo Estoque">Baixo Estoque</SelectItem>
+                    <SelectItem value="Indisponível">Indisponível</SelectItem>
+                    <SelectItem value="Em Manutenção">Em Manutenção</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             
-            {/* Location */}
-            <div className="space-y-2">
-              <Label htmlFor="location">Localização</Label>
-              <Input
-                id="location"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                placeholder="Local de armazenamento"
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium mb-1">Descrição</label>
+              <Textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                rows={3}
               />
             </div>
             
-            {/* Expiration Date */}
-            <div className="space-y-2">
-              <Label htmlFor="expirationDate">Data de Validade (opcional)</Label>
-              <Input
-                id="expirationDate"
-                name="expirationDate"
-                type="date"
-                value={formData.expirationDate ? new Date(formData.expirationDate).toISOString().split('T')[0] : ''}
-                onChange={handleChange}
+            <div>
+              <label htmlFor="notes" className="block text-sm font-medium mb-1">Observações</label>
+              <Textarea
+                id="notes"
+                name="notes"
+                value={formData.notes}
+                onChange={handleInputChange}
+                rows={2}
               />
             </div>
-          </div>
+          </CardContent>
           
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Descrição</Label>
-            <Textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Descrição detalhada do item"
-              rows={4}
-            />
-          </div>
-          
-          <div className="flex justify-end space-x-4 pt-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => navigate('/dashboard/inventory')}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Salvando...' : isEditMode ? 'Atualizar Item' : 'Adicionar Item'}
-            </Button>
-          </div>
+          <CardFooter>
+            <div className="flex justify-end gap-4 w-full">
+              <Button
+                type="button"
+                variant="outline" 
+                onClick={goBack}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                type="submit"
+                disabled={isSubmitting}
+                className="flex items-center gap-2"
+              >
+                <Save className="h-4 w-4" />
+                {isSubmitting ? 'Salvando...' : 'Salvar'}
+              </Button>
+            </div>
+          </CardFooter>
         </form>
-      </div>
+      </Card>
     </div>
   );
 };

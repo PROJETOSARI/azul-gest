@@ -1,164 +1,221 @@
-import React, { useState } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+
+import { useAuth } from '@/contexts/AuthContext';
+import { useState, useEffect } from 'react';
+import { LogOut, User, Calculator, Users, ClipboardList, FileText, ShoppingCart, ArrowLeft, Package } from 'lucide-react';
+import { Link, useLocation, Navigate, useNavigate, Outlet } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Layout,
-  Menu,
-  Users,
-  FileText,
-  FileBadge,
-  ShoppingCart,
-  ClipboardList,
-  Calculator,
-  DatabaseBackup,
-} from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { ModeToggle } from "./ModeToggle";
-import { useToast } from "@/hooks/use-toast";
+import Footer from './Footer';
 
-const navigationItems = [
-  { label: "Dashboard", path: "/dashboard", icon: <Layout className="h-5 w-5" /> },
-  { label: "Funcionários", path: "/dashboard/employees", icon: <Users className="h-5 w-5" /> },
-  { label: "Protocolos", path: "/dashboard/protocols", icon: <FileText className="h-5 w-5" /> },
-  { label: "Licitações", path: "/dashboard/licitacoes", icon: <FileBadge className="h-5 w-5" /> },
-  { label: "Compras", path: "/dashboard/compras", icon: <ShoppingCart className="h-5 w-5" /> },
-  { label: "Inventário", path: "/dashboard/inventory", icon: <ClipboardList className="h-5 w-5" /> },
-  { label: "Simulador Salarial", path: "/dashboard/salary-simulator", icon: <Calculator className="h-5 w-5" /> },
-  { label: "Gerenciamento de Dados", path: "/dashboard/data-management", icon: <DatabaseBackup className="h-5 w-5" /> },
-];
-
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+const DashboardLayout = () => {
+  const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
-  const { toast } = useToast();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate("/");
-      toast({
-        title: "Logout realizado com sucesso!",
-        description: "Você foi redirecionado para a página de login.",
-      });
-    } catch (error) {
-      console.error("Erro ao fazer logout:", error);
-      toast({
-        variant: "destructive",
-        title: "Erro ao fazer logout",
-        description: "Por favor, tente novamente.",
-      });
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
     }
+    
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isMobileMenuOpen]);
+
+  if (!isAuthenticated) {
+    return <Navigate to="/" />;
+  }
+
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
+  const menuItems = [
+    {
+      name: 'Dashboard',
+      path: '/dashboard',
+      icon: <Calculator size={20} />
+    },
+    {
+      name: 'Funcionários',
+      path: '/dashboard/employees',
+      icon: <Users size={20} />
+    },
+    {
+      name: 'Protocolos',
+      path: '/dashboard/protocols',
+      icon: <ClipboardList size={20} />
+    },
+    {
+      name: 'Licitações',
+      path: '/dashboard/licitacoes',
+      icon: <FileText size={20} />
+    },
+    {
+      name: 'Compras',
+      path: '/dashboard/compras',
+      icon: <ShoppingCart size={20} />
+    },
+    {
+      name: 'Almoxarifado',
+      path: '/dashboard/inventory',
+      icon: <Package size={20} />
+    },
+    {
+      name: 'Simulador de Salário',
+      path: '/dashboard/salary-simulator',
+      icon: <Calculator size={20} />
+    }
+  ];
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   return (
-    <div className="flex h-screen bg-background antialiased">
-      {/* Mobile Menu */}
-      <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-        <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            className="md:hidden absolute top-4 left-4 text-muted-foreground hover:text-foreground rounded-full p-2"
+    <div className="flex h-screen bg-gray-100">
+      {/* Back arrow button */}
+      <div className="fixed top-4 left-16 z-30 lg:left-24">
+        <Button
+          variant="outline"
+          size="icon"
+          className="bg-white shadow-sm"
+          onClick={handleGoBack}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+      </div>
+
+      <div className="lg:hidden fixed top-4 left-4 z-30">
+        <Button
+          variant="outline"
+          size="icon"
+          className="bg-white"
+          onClick={toggleMobileMenu}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-6 h-6"
           >
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">Abrir menu</span>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="p-0 pt-6 w-72">
-          <SheetHeader className="px-4 pb-4">
-            <SheetTitle>Menu</SheetTitle>
-            <SheetDescription>
-              Navegue pelo sistema.
-            </SheetDescription>
-          </SheetHeader>
-          <Separator />
-          <div className="flex flex-col gap-2 py-4 px-2">
-            {navigationItems.map((item) => (
-              <Link
-                key={item.label}
-                to={item.path}
-                className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-secondary hover:text-foreground ${location.pathname.startsWith(item.path)
-                  ? "bg-secondary text-foreground"
-                  : "text-muted-foreground"
-                  }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item.icon}
-                {item.label}
-              </Link>
-            ))}
-          </div>
-          <Separator />
-          <div className="flex flex-col gap-2 py-4 px-4">
-            <ModeToggle />
-            <Button variant="outline" onClick={handleLogout} className="mt-2 w-full">
-              Sair
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"}
+            />
+          </svg>
+        </Button>
+      </div>
 
-      {/* Sidebar (Desktop) */}
-      <aside className="hidden md:flex flex-col w-64 border-r bg-secondary/50 border-r-border">
-        <div className="h-16 border-b border-b-border flex items-center px-4">
-          <Link to="/dashboard" className="font-semibold text-lg">
-            Dashboard
-          </Link>
-        </div>
-        <div className="flex flex-col gap-2 py-4 px-2">
-          {navigationItems.map((item) => (
-            <Link
-              key={item.label}
-              to={item.path}
-              className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-secondary hover:text-foreground ${location.pathname.startsWith(item.path)
-                ? "bg-secondary text-foreground"
-                : "text-muted-foreground"
-                }`}
+      <div 
+        className={`fixed inset-y-0 left-0 transform lg:relative lg:translate-x-0 z-50
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          ${isHovering ? 'lg:w-64' : 'lg:w-20'}
+          transition-all duration-300 ease-in-out lg:flex lg:flex-col
+          bg-white border-r border-gray-200 shadow-sm`}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+      >
+        <div className="flex flex-col h-full">
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex justify-center items-center h-10">
+              {isHovering || isMobileMenuOpen ? (
+                // Logo completa quando o menu está aberto ou em hover
+                <div className="transition-opacity duration-300 ease-in-out flex items-center justify-center">
+                  <img
+                    src="/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png"
+                    alt="Logo Completa"
+                    className="h-auto w-auto max-h-10 object-contain"
+                  />
+                </div>
+              ) : (
+                // Logo ícone quando o menu está fechado
+                <div className="transition-opacity duration-300 ease-in-out flex items-center justify-center">
+                  <img
+                    src="/lovable-uploads/9c4a204d-1c51-4b2f-906b-3c317974f925.png"
+                    alt="Logo Ícone"
+                    className="h-auto w-auto max-h-10 object-contain"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div 
+            onClick={() => {
+              navigate('/dashboard/profile');
+              setIsMobileMenuOpen(false);
+            }}
+            className="px-4 py-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center">
+              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-brand-blue flex items-center justify-center text-white">
+                <User size={20} />
+              </div>
+              <div className={`ml-3 ${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>
+                <p className="text-sm font-medium text-gray-700">{user?.name}</p>
+                <p className="text-xs text-gray-500">{user?.email}</p>
+              </div>
+            </div>
+          </div>
+
+          <nav className="flex-1 px-2 py-4 space-y-1">
+            {menuItems.map((item) => {
+              const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors
+                    ${isActive
+                      ? 'bg-brand-blue text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <span className="mr-3">{item.icon}</span>
+                  <span className={`${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="p-4 border-t border-gray-200">
+            <Button
+              variant="outline"
+              onClick={() => {
+                logout();
+                setIsMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center justify-center gap-2 text-gray-700 hover:text-brand-blue ${!isHovering && 'lg:p-2'}`}
             >
-              {item.icon}
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col">
-        <header className="h-16 border-b border-b-border flex items-center justify-between px-4">
-          <div className="flex items-center gap-4">
-            <p className="font-semibold text-lg">
-              {navigationItems.find((item) =>
-                location.pathname.startsWith(item.path)
-              )?.label || "Dashboard"}
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <ModeToggle />
-            <p className="text-sm text-muted-foreground hidden lg:block">
-              {user?.email}
-            </p>
-            <Avatar className="size-8">
-              <AvatarImage src="https://github.com/shadcn.png" alt="Avatar" />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
-            <Button variant="outline" onClick={handleLogout}>
-              Sair
+              <LogOut size={16} />
+              <span className={`${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>Sair</span>
             </Button>
           </div>
-        </header>
-        <div className="flex-1 p-6">{children}</div>
-      </main>
+        </div>
+      </div>
+
+      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isHovering ? 'lg:ml-64' : 'lg:ml-20'}`}>
+        {isMobileMenuOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={toggleMobileMenu}
+          />
+        )}
+        
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-6">
+          <Outlet />
+        </main>
+        
+        <Footer />
+      </div>
     </div>
   );
 };

@@ -22,50 +22,53 @@ import PreparingData from "./pages/PreparingData";
 import Inventory from "./pages/Inventory";
 import InventoryItemView from "./pages/InventoryItemView";
 import InventoryForm from "./pages/InventoryForm";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <EmployeeProvider>
-            <InventoryProvider>
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<Login />} />
-                <Route path="/preparing" element={<PreparingData />} />
-                
-                {/* Dashboard Routes (Protected) */}
-                <Route path="/dashboard" element={<DashboardLayout />}>
-                  <Route index element={<Dashboard />} />
-                  <Route path="employees" element={<EmployeesList />} />
-                  <Route path="employees/new" element={<EmployeeForm />} />
-                  <Route path="protocols" element={<Protocols />} />
-                  <Route path="licitacoes" element={<Licitacoes />} />
-                  <Route path="compras" element={<Compras />} />
-                  <Route path="profile" element={<Profile />} />
-                  <Route path="salary-simulator" element={<SalarySimulator />} />
+    <ThemeProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <EmployeeProvider>
+              <InventoryProvider>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/" element={<Login />} />
+                  <Route path="/preparing" element={<PreparingData />} />
                   
-                  {/* Inventory Routes */}
-                  <Route path="inventory" element={<Inventory />} />
-                  <Route path="inventory/:id" element={<InventoryItemView />} />
-                  <Route path="inventory/new" element={<InventoryForm />} />
-                  <Route path="inventory/edit/:id" element={<InventoryForm />} />
-                </Route>
-                
-                {/* Fallback routes */}
-                <Route path="/404" element={<NotFound />} />
-                <Route path="*" element={<Navigate to="/404" />} />
-              </Routes>
-            </InventoryProvider>
-          </EmployeeProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+                  {/* Dashboard Routes (Protected) */}
+                  <Route path="/dashboard" element={<DashboardLayout />}>
+                    <Route index element={<Dashboard />} />
+                    <Route path="employees" element={<EmployeesList />} />
+                    <Route path="employees/new" element={<EmployeeForm />} />
+                    <Route path="protocols" element={<Protocols />} />
+                    <Route path="licitacoes" element={<Licitacoes />} />
+                    <Route path="compras" element={<Compras />} />
+                    <Route path="profile" element={<Profile />} />
+                    <Route path="salary-simulator" element={<SalarySimulator />} />
+                    
+                    {/* Inventory Routes */}
+                    <Route path="inventory" element={<Inventory />} />
+                    <Route path="inventory/:id" element={<InventoryItemView />} />
+                    <Route path="inventory/new" element={<InventoryForm />} />
+                    <Route path="inventory/edit/:id" element={<InventoryForm />} />
+                  </Route>
+                  
+                  {/* Fallback routes */}
+                  <Route path="/404" element={<NotFound />} />
+                  <Route path="*" element={<Navigate to="/404" />} />
+                </Routes>
+              </InventoryProvider>
+            </EmployeeProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

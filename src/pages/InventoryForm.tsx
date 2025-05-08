@@ -1,321 +1,296 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { z } from 'zod';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Save } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
 import { useInventory } from '@/contexts/InventoryContext';
+import { InventoryItem } from '@/types/inventory';
 
 const InventoryForm = () => {
   const { id } = useParams<{ id: string }>();
+  const { addInventoryItem, updateInventoryItem, getInventoryItemById } = useInventory();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { addItemToInventory, updateInventoryItem, getInventoryItemById } = useInventory();
-  
-  const [formData, setFormData] = useState({
+  const isEditing = Boolean(id);
+
+  const [formData, setFormData] = useState<Omit<InventoryItem, 'id'>>({
     name: '',
     description: '',
     category: '',
-    location: '',
     quantity: 0,
     initialQuantity: 0,
-    unit: '',
-    minimumQuantity: 0,
-    acquisitionDate: '',
-    lastUpdate: new Date().toISOString().split('T')[0],
-    responsible: '',
-    status: 'Disponível',
+    measurementUnit: '',
+    location: '',
+    minimumStock: 0,
+    supplierName: '',
+    supplierContact: '',
+    purchaseDate: '',
+    lastUpdated: new Date().toISOString(),
     notes: ''
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   useEffect(() => {
-    if (id) {
+    if (isEditing && id) {
       const item = getInventoryItemById(id);
       if (item) {
-        // Convert dates to YYYY-MM-DD format for input fields
-        const formattedItem = {
-          ...item,
-          acquisitionDate: item.acquisitionDate ? new Date(item.acquisitionDate).toISOString().split('T')[0] : '',
-          lastUpdate: item.lastUpdate ? new Date(item.lastUpdate).toISOString().split('T')[0] : ''
-        };
-        
-        setFormData(formattedItem);
-      }
-    }
-  }, [id, getInventoryItemById]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    
-    // For number inputs, convert the string value to a number
-    if (type === 'number') {
-      setFormData(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const currentDate = new Date().toISOString();
-
-      // Make sure initialQuantity is set properly
-      let updatedData = { ...formData };
-      
-      // If this is a new item, set initialQuantity equal to quantity
-      if (!id) {
-        updatedData.initialQuantity = formData.quantity;
-      }
-      
-      // Set the last update timestamp
-      updatedData.lastUpdate = currentDate;
-
-      if (id) {
-        await updateInventoryItem(id, updatedData);
-        toast({
-          title: "Item atualizado",
-          description: "O item foi atualizado com sucesso.",
+        setFormData({
+          name: item.name,
+          description: item.description,
+          category: item.category,
+          quantity: item.quantity,
+          initialQuantity: item.initialQuantity || item.quantity,
+          measurementUnit: item.measurementUnit,
+          location: item.location,
+          minimumStock: item.minimumStock,
+          supplierName: item.supplierName,
+          supplierContact: item.supplierContact,
+          purchaseDate: item.purchaseDate,
+          lastUpdated: item.lastUpdated,
+          notes: item.notes
         });
       } else {
-        await addItemToInventory(updatedData);
         toast({
-          title: "Item adicionado",
-          description: "O novo item foi adicionado com sucesso.",
+          title: "Erro",
+          description: "Item não encontrado",
+          variant: "destructive",
+        });
+        navigate('/dashboard/inventory');
+      }
+    }
+  }, [id, isEditing, getInventoryItemById, navigate, toast]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    
+    // Convert numerical fields
+    if (['quantity', 'minimumStock', 'initialQuantity'].includes(name)) {
+      setFormData({
+        ...formData,
+        [name]: parseFloat(value) || 0
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      if (isEditing && id) {
+        updateInventoryItem({ ...formData, id });
+        toast({
+          title: "Sucesso",
+          description: "Item atualizado com sucesso",
+        });
+      } else {
+        addInventoryItem({
+          ...formData,
+          lastUpdated: new Date().toISOString()
+        });
+        toast({
+          title: "Sucesso",
+          description: "Item adicionado com sucesso",
         });
       }
       navigate('/dashboard/inventory');
     } catch (error) {
-      console.error("Erro ao salvar o item:", error);
       toast({
         title: "Erro",
-        description: "Ocorreu um erro ao salvar o item. Por favor, tente novamente.",
-        variant: "destructive"
+        description: "Erro ao salvar o item. Verifique os dados e tente novamente.",
+        variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  const goBack = () => {
-    navigate(-1);
-  };
-
   return (
-    <div className="container max-w-2xl mx-auto">
-      <Button 
-        variant="ghost" 
-        onClick={goBack} 
-        className="mb-4 inline-flex items-center text-gray-600 hover:text-gray-800"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Voltar
-      </Button>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>{id ? 'Editar Item' : 'Adicionar Novo Item'}</CardTitle>
-        </CardHeader>
+    <div className="animate-fade-in">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-foreground">
+          {isEditing ? 'Editar Item' : 'Novo Item'}
+        </h1>
+        <p className="text-muted-foreground">
+          {isEditing ? 'Atualize as informações do item no estoque' : 'Adicione um novo item ao estoque'}
+        </p>
+      </div>
+
+      <Card className="border-border bg-card">
         <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium mb-1">Nome</label>
+          <CardHeader>
+            <CardTitle>Informações do Item</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome do Item *</Label>
                 <Input
                   id="name"
                   name="name"
                   value={formData.name}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   required
+                  className="bg-background"
                 />
               </div>
-              
-              <div>
-                <label htmlFor="category" className="block text-sm font-medium mb-1">Categoria</label>
-                <Select
+
+              <div className="space-y-2">
+                <Label htmlFor="category">Categoria *</Label>
+                <Input
+                  id="category"
+                  name="category"
                   value={formData.category}
-                  onValueChange={(value) => handleSelectChange('category', value)}
-                >
-                  <SelectTrigger id="category">
-                    <SelectValue placeholder="Selecione uma categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Papelaria">Papelaria</SelectItem>
-                    <SelectItem value="Escritório">Escritório</SelectItem>
-                    <SelectItem value="Limpeza">Limpeza</SelectItem>
-                    <SelectItem value="Informática">Informática</SelectItem>
-                    <SelectItem value="Móveis">Móveis</SelectItem>
-                    <SelectItem value="Eletrônicos">Eletrônicos</SelectItem>
-                    <SelectItem value="Outros">Outros</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={handleChange}
+                  required
+                  className="bg-background"
+                />
               </div>
-              
-              <div>
-                <label htmlFor="quantity" className="block text-sm font-medium mb-1">Quantidade</label>
+
+              <div className="space-y-2">
+                <Label htmlFor="quantity">Quantidade Atual *</Label>
                 <Input
                   id="quantity"
                   name="quantity"
                   type="number"
-                  min="0"
                   value={formData.quantity}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   required
-                />
-              </div>
-              
-              {id && (
-                <div>
-                  <label htmlFor="initialQuantity" className="block text-sm font-medium mb-1">Quantidade Inicial</label>
-                  <Input
-                    id="initialQuantity"
-                    name="initialQuantity"
-                    type="number"
-                    min="0"
-                    value={formData.initialQuantity}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              )}
-              
-              <div>
-                <label htmlFor="unit" className="block text-sm font-medium mb-1">Unidade</label>
-                <Select
-                  value={formData.unit}
-                  onValueChange={(value) => handleSelectChange('unit', value)}
-                >
-                  <SelectTrigger id="unit">
-                    <SelectValue placeholder="Selecione uma unidade" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Unidade">Unidade</SelectItem>
-                    <SelectItem value="Caixa">Caixa</SelectItem>
-                    <SelectItem value="Pacote">Pacote</SelectItem>
-                    <SelectItem value="Resma">Resma</SelectItem>
-                    <SelectItem value="Litro">Litro</SelectItem>
-                    <SelectItem value="Metro">Metro</SelectItem>
-                    <SelectItem value="Kg">Kg</SelectItem>
-                    <SelectItem value="Peça">Peça</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label htmlFor="minimumQuantity" className="block text-sm font-medium mb-1">Quantidade Mínima</label>
-                <Input
-                  id="minimumQuantity"
-                  name="minimumQuantity"
-                  type="number"
                   min="0"
-                  value={formData.minimumQuantity}
-                  onChange={handleInputChange}
+                  step="0.01"
+                  className="bg-background"
                 />
               </div>
-              
-              <div>
-                <label htmlFor="location" className="block text-sm font-medium mb-1">Localização</label>
+
+              <div className="space-y-2">
+                <Label htmlFor="initialQuantity">Quantidade Inicial *</Label>
+                <Input
+                  id="initialQuantity"
+                  name="initialQuantity"
+                  type="number"
+                  value={formData.initialQuantity}
+                  onChange={handleChange}
+                  required
+                  min="0"
+                  step="0.01"
+                  className="bg-background"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="measurementUnit">Unidade de Medida *</Label>
+                <Input
+                  id="measurementUnit"
+                  name="measurementUnit"
+                  value={formData.measurementUnit}
+                  onChange={handleChange}
+                  required
+                  placeholder="ex: kg, unidade, litro"
+                  className="bg-background"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="minimumStock">Estoque Mínimo</Label>
+                <Input
+                  id="minimumStock"
+                  name="minimumStock"
+                  type="number"
+                  value={formData.minimumStock}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                  className="bg-background"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="location">Localização</Label>
                 <Input
                   id="location"
                   name="location"
                   value={formData.location}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
+                  placeholder="ex: Prateleira A, Armário 3"
+                  className="bg-background"
                 />
               </div>
-              
-              <div>
-                <label htmlFor="acquisitionDate" className="block text-sm font-medium mb-1">Data de Aquisição</label>
+
+              <div className="space-y-2">
+                <Label htmlFor="purchaseDate">Data de Compra</Label>
                 <Input
-                  id="acquisitionDate"
-                  name="acquisitionDate"
+                  id="purchaseDate"
+                  name="purchaseDate"
                   type="date"
-                  value={formData.acquisitionDate}
-                  onChange={handleInputChange}
+                  value={formData.purchaseDate}
+                  onChange={handleChange}
+                  className="bg-background"
                 />
-              </div>
-              
-              <div>
-                <label htmlFor="responsible" className="block text-sm font-medium mb-1">Responsável</label>
-                <Input
-                  id="responsible"
-                  name="responsible"
-                  value={formData.responsible}
-                  onChange={handleInputChange}
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="status" className="block text-sm font-medium mb-1">Status</label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => handleSelectChange('status', value)}
-                >
-                  <SelectTrigger id="status">
-                    <SelectValue placeholder="Selecione um status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Disponível">Disponível</SelectItem>
-                    <SelectItem value="Baixo Estoque">Baixo Estoque</SelectItem>
-                    <SelectItem value="Indisponível">Indisponível</SelectItem>
-                    <SelectItem value="Em Manutenção">Em Manutenção</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </div>
-            
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium mb-1">Descrição</label>
-              <Textarea
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Descrição</Label>
+              <Input
                 id="description"
                 name="description"
                 value={formData.description}
-                onChange={handleInputChange}
-                rows={3}
+                onChange={handleChange}
+                className="bg-background"
               />
             </div>
-            
-            <div>
-              <label htmlFor="notes" className="block text-sm font-medium mb-1">Observações</label>
-              <Textarea
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="supplierName">Nome do Fornecedor</Label>
+                <Input
+                  id="supplierName"
+                  name="supplierName"
+                  value={formData.supplierName}
+                  onChange={handleChange}
+                  className="bg-background"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="supplierContact">Contato do Fornecedor</Label>
+                <Input
+                  id="supplierContact"
+                  name="supplierContact"
+                  value={formData.supplierContact}
+                  onChange={handleChange}
+                  className="bg-background"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notes">Observações</Label>
+              <Input
                 id="notes"
                 name="notes"
                 value={formData.notes}
-                onChange={handleInputChange}
-                rows={2}
+                onChange={handleChange}
+                className="bg-background"
               />
             </div>
           </CardContent>
-          
-          <CardFooter>
-            <div className="flex justify-end gap-4 w-full">
-              <Button
-                type="button"
-                variant="outline" 
-                onClick={goBack}
-              >
-                Cancelar
-              </Button>
-              <Button 
-                type="submit"
-                disabled={isSubmitting}
-                className="flex items-center gap-2"
-              >
-                <Save className="h-4 w-4" />
-                {isSubmitting ? 'Salvando...' : 'Salvar'}
-              </Button>
-            </div>
+          <CardFooter className="flex justify-between">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => navigate('/dashboard/inventory')}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit">
+              {isEditing ? 'Atualizar' : 'Adicionar'} Item
+            </Button>
           </CardFooter>
         </form>
       </Card>

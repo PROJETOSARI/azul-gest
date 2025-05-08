@@ -5,9 +5,6 @@ import { LogOut, User, Calculator, Users, ClipboardList, FileText, ShoppingCart,
 import { Link, useLocation, Navigate, useNavigate, Outlet } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import Footer from './Footer';
-import { useTheme } from '@/contexts/ThemeContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
 
 const DashboardLayout = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -15,7 +12,6 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
-  const { theme, toggleTheme } = useTheme();
   
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -79,23 +75,14 @@ const DashboardLayout = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // Check if a path is active
-  const isActive = (path: string) => {
-    if (path === '/dashboard') {
-      // Only match dashboard exactly
-      return location.pathname === '/dashboard';
-    }
-    return location.pathname === path || location.pathname.startsWith(`${path}/`);
-  };
-
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-gray-100">
       {/* Back arrow button */}
       <div className="fixed top-4 left-16 z-30 lg:left-24">
         <Button
           variant="outline"
           size="icon"
-          className="bg-card shadow-sm"
+          className="bg-white shadow-sm"
           onClick={handleGoBack}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -106,7 +93,7 @@ const DashboardLayout = () => {
         <Button
           variant="outline"
           size="icon"
-          className="bg-card"
+          className="bg-white"
           onClick={toggleMobileMenu}
         >
           <svg
@@ -131,46 +118,32 @@ const DashboardLayout = () => {
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           ${isHovering ? 'lg:w-64' : 'lg:w-20'}
           transition-all duration-300 ease-in-out lg:flex lg:flex-col
-          bg-card border-r border-border shadow-sm`}
+          bg-white border-r border-gray-200 shadow-sm`}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
         <div className="flex flex-col h-full">
-          <div className="p-4 border-b border-border">
-            <div className="flex justify-center items-center h-12">
-              <AnimatePresence initial={false}>
-                {isHovering || isMobileMenuOpen ? (
-                  <motion.div
-                    key="full-logo"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="flex items-center justify-center"
-                  >
-                    <img
-                      src="/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png"
-                      alt="Logo Completa"
-                      className="h-auto w-auto max-h-12 object-contain"
-                    />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="icon-logo"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="flex items-center justify-center"
-                  >
-                    <img
-                      src="/lovable-uploads/9c4a204d-1c51-4b2f-906b-3c317974f925.png"
-                      alt="Logo Ícone"
-                      className="h-auto w-auto max-h-12 object-contain"
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex justify-center items-center h-10">
+              {isHovering || isMobileMenuOpen ? (
+                // Logo completa quando o menu está aberto ou em hover
+                <div className="transition-opacity duration-300 ease-in-out flex items-center justify-center">
+                  <img
+                    src="/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png"
+                    alt="Logo Completa"
+                    className="h-auto w-auto max-h-10 object-contain"
+                  />
+                </div>
+              ) : (
+                // Logo ícone quando o menu está fechado
+                <div className="transition-opacity duration-300 ease-in-out flex items-center justify-center">
+                  <img
+                    src="/lovable-uploads/9c4a204d-1c51-4b2f-906b-3c317974f925.png"
+                    alt="Logo Ícone"
+                    className="h-auto w-auto max-h-10 object-contain"
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -179,31 +152,31 @@ const DashboardLayout = () => {
               navigate('/dashboard/profile');
               setIsMobileMenuOpen(false);
             }}
-            className="px-4 py-4 border-b border-border cursor-pointer hover:bg-accent/50 transition-colors"
+            className="px-4 py-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-center">
               <div className="flex-shrink-0 h-10 w-10 rounded-full bg-brand-blue flex items-center justify-center text-white">
                 <User size={20} />
               </div>
               <div className={`ml-3 ${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>
-                <p className="text-sm font-medium text-foreground">{user?.name}</p>
-                <p className="text-xs text-muted-foreground">{user?.email}</p>
+                <p className="text-sm font-medium text-gray-700">{user?.name}</p>
+                <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
             </div>
           </div>
 
           <nav className="flex-1 px-2 py-4 space-y-1">
             {menuItems.map((item) => {
-              const active = isActive(item.path);
+              const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={cn(`flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors`,
-                    active
+                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors
+                    ${isActive
                       ? 'bg-brand-blue text-white'
-                      : 'text-foreground hover:bg-accent'
-                  )}
+                      : 'text-gray-700 hover:bg-gray-100'
+                    }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <span className="mr-3">{item.icon}</span>
@@ -213,50 +186,18 @@ const DashboardLayout = () => {
             })}
           </nav>
 
-          <div className="p-4 border-t border-border">
-            <div className="flex flex-col space-y-3">
-              <Button
-                variant="outline"
-                onClick={toggleTheme}
-                className={`w-full flex items-center justify-center gap-2 text-foreground ${!isHovering && 'lg:p-2'}`}
-                size="sm"
-              >
-                {theme === 'dark' ? (
-                  <>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sun">
-                      <circle cx="12" cy="12" r="4"/>
-                      <path d="M12 2v2"/>
-                      <path d="M12 20v2"/>
-                      <path d="M4.93 4.93l1.41 1.41"/>
-                      <path d="M17.66 17.66l1.41 1.41"/>
-                      <path d="M2 12h2"/>
-                      <path d="M20 12h2"/>
-                      <path d="M6.34 17.66l-1.41 1.41"/>
-                      <path d="M19.07 4.93l-1.41 1.41"/>
-                    </svg>
-                    <span className={`${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>Modo Claro</span>
-                  </>
-                ) : (
-                  <>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-moon">
-                      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
-                    </svg>
-                    <span className={`${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>Modo Escuro</span>
-                  </>
-                )}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  logout();
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`w-full flex items-center justify-center gap-2 text-foreground ${!isHovering && 'lg:p-2'}`}
-              >
-                <LogOut size={16} />
-                <span className={`${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>Sair</span>
-              </Button>
-            </div>
+          <div className="p-4 border-t border-gray-200">
+            <Button
+              variant="outline"
+              onClick={() => {
+                logout();
+                setIsMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center justify-center gap-2 text-gray-700 hover:text-brand-blue ${!isHovering && 'lg:p-2'}`}
+            >
+              <LogOut size={16} />
+              <span className={`${!isHovering && 'lg:hidden'} transition-opacity duration-300`}>Sair</span>
+            </Button>
           </div>
         </div>
       </div>
@@ -269,7 +210,7 @@ const DashboardLayout = () => {
           />
         )}
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-accent p-4 md:p-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-6">
           <Outlet />
         </main>
         

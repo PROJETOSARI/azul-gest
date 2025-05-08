@@ -22,6 +22,7 @@ import PreparingData from "./pages/PreparingData";
 import Inventory from "./pages/Inventory";
 import InventoryItemView from "./pages/InventoryItemView";
 import InventoryForm from "./pages/InventoryForm";
+import DataManagement from "./pages/DataManagement";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,9 @@ const App = () => (
                   <Route path="inventory/:id" element={<InventoryItemView />} />
                   <Route path="inventory/new" element={<InventoryForm />} />
                   <Route path="inventory/edit/:id" element={<InventoryForm />} />
+                  
+                  {/* Data Management Route */}
+                  <Route path="data-management" element={<DataManagement />} />
                 </Route>
                 
                 {/* Fallback routes */}

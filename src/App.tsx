@@ -22,6 +22,7 @@ import PreparingData from "./pages/PreparingData";
 import Inventory from "./pages/Inventory";
 import InventoryItemView from "./pages/InventoryItemView";
 import InventoryForm from "./pages/InventoryForm";
+import DataManagement from "./pages/DataManagement";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
                   <Route path="compras" element={<Compras />} />
                   <Route path="profile" element={<Profile />} />
                   <Route path="salary-simulator" element={<SalarySimulator />} />
+                  <Route path="data-management" element={<DataManagement />} />
                   
                   {/* Inventory Routes */}
                   <Route path="inventory" element={<Inventory />} />

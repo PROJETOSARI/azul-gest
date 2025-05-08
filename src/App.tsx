@@ -55,8 +55,8 @@ const App = () => (
                   {/* Inventory Routes */}
                   <Route path="inventory" element={<Inventory />} />
                   <Route path="inventory/:id" element={<InventoryItemView />} />
-                  <Route path="inventory/new" element={<InventoryForm />} />
                   <Route path="inventory/edit/:id" element={<InventoryForm />} />
+                  <Route path="inventory/new" element={<InventoryForm />} />
                 </Route>
                 
                 {/* Fallback routes */}

@@ -1,365 +1,323 @@
+
 import React, { useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { InventoryItem, InventoryCategory, Department } from '@/types/inventory';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Save } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { useInventory } from '@/contexts/InventoryContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "@/components/ui/use-toast";
-
-type FormData = Omit<InventoryItem, 'id' | 'lastUpdated'>;
 
 const InventoryForm = () => {
-  const { addItem, updateItem, getItemById } = useInventory();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
+  const { toast } = useToast();
+  const { addItemToInventory, updateInventoryItem, getInventoryItemById } = useInventory();
+  
+  const [formData, setFormData] = useState({
     name: '',
-    category: 'Material de Escritório',
-    department: 'Administração',
-    quantity: 1,
-    minQuantity: 1,
-    expirationDate: null,
-    location: '',
     description: '',
-    isOpen: true,
-    unitPrice: 0,
-    initialQuantity: 1,
+    category: '',
+    location: '',
+    quantity: 0,
+    initialQuantity: 0,
+    unit: '',
+    minimumQuantity: 0,
+    acquisitionDate: '',
+    lastUpdate: new Date().toISOString().split('T')[0],
+    responsible: '',
+    status: 'Disponível',
+    notes: ''
   });
-  const [date, setDate] = useState<Date | undefined>(formData.expirationDate ? new Date(formData.expirationDate) : undefined);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (id) {
-      setIsEditMode(true);
-      const item = getItemById(id);
+      const item = getInventoryItemById(id);
       if (item) {
-        setFormData({
-          name: item.name,
-          category: item.category,
-          department: item.department,
-          quantity: item.quantity,
-          minQuantity: item.minQuantity,
-          expirationDate: item.expirationDate,
-          location: item.location,
-          description: item.description,
-          isOpen: item.isOpen,
-          unitPrice: item.unitPrice,
-          initialQuantity: item.initialQuantity,
-        });
-        setDate(item.expirationDate ? new Date(item.expirationDate) : undefined);
+        // Convert dates to YYYY-MM-DD format for input fields
+        const formattedItem = {
+          ...item,
+          acquisitionDate: item.acquisitionDate ? new Date(item.acquisitionDate).toISOString().split('T')[0] : '',
+          lastUpdate: item.lastUpdate ? new Date(item.lastUpdate).toISOString().split('T')[0] : ''
+        };
+        
+        setFormData(formattedItem);
       }
-    } else {
-      setIsEditMode(false);
-      setFormData({
-        name: '',
-        category: 'Material de Escritório',
-        department: 'Administração',
-        quantity: 1,
-        minQuantity: 1,
-        expirationDate: null,
-        location: '',
-        description: '',
-        isOpen: true,
-        unitPrice: 0,
-        initialQuantity: 1,
-      });
-      setDate(undefined);
     }
-  }, [id, getItemById]);
+  }, [id, getInventoryItemById]);
 
-  useEffect(() => {
-    setFormData(prev => ({
-      ...prev,
-      expirationDate: date ? date.toISOString() : null
-    }));
-  }, [date]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    
+    // For number inputs, convert the string value to a number
+    if (type === 'number') {
+      setFormData(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isEditMode) {
-      updateExistingItem();
-    } else {
-      addItemToInventory();
-    }
-  };
+    setIsSubmitting(true);
 
-  const addItemToInventory = () => {
-    if (formData.name.trim() === '') {
+    try {
+      const currentDate = new Date().toISOString();
+
+      // Make sure initialQuantity is set properly
+      let updatedData = { ...formData };
+      
+      // If this is a new item, set initialQuantity equal to quantity
+      if (!id) {
+        updatedData.initialQuantity = formData.quantity;
+      }
+      
+      // Set the last update timestamp
+      updatedData.lastUpdate = currentDate;
+
+      if (id) {
+        await updateInventoryItem(id, updatedData);
+        toast({
+          title: "Item atualizado",
+          description: "O item foi atualizado com sucesso.",
+        });
+      } else {
+        await addItemToInventory(updatedData);
+        toast({
+          title: "Item adicionado",
+          description: "O novo item foi adicionado com sucesso.",
+        });
+      }
+      navigate('/dashboard/inventory');
+    } catch (error) {
+      console.error("Erro ao salvar o item:", error);
       toast({
         title: "Erro",
-        description: "O nome do item não pode estar vazio.",
-        variant: "destructive",
+        description: "Ocorreu um erro ao salvar o item. Por favor, tente novamente.",
+        variant: "destructive"
       });
-      return;
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const newItem: Omit<InventoryItem, "id" | "lastUpdated"> = {
-      name: formData.name.trim(),
-      category: formData.category,
-      department: formData.department,
-      quantity: formData.quantity,
-      minQuantity: formData.minQuantity,
-      expirationDate: formData.expirationDate,
-      location: formData.location,
-      description: formData.description,
-      isOpen: formData.isOpen,
-      unitPrice: formData.unitPrice,
-      initialQuantity: formData.quantity
-    };
-
-    addItem(newItem);
-    toast({
-      title: "Sucesso",
-      description: "Item adicionado ao inventário com sucesso.",
-    });
-    navigate('/dashboard/inventory');
   };
 
-  const updateExistingItem = () => {
-    if (!id) {
-      toast({
-        title: "Erro",
-        description: "ID do item não encontrado.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (formData.name.trim() === '') {
-      toast({
-        title: "Erro",
-        description: "O nome do item não pode estar vazio.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const updatedItem: InventoryItem = {
-      id: id,
-      name: formData.name.trim(),
-      category: formData.category,
-      department: formData.department,
-      quantity: formData.quantity,
-      minQuantity: formData.minQuantity,
-      expirationDate: formData.expirationDate,
-      location: formData.location,
-      description: formData.description,
-      isOpen: formData.isOpen,
-      unitPrice: formData.unitPrice,
-      lastUpdated: new Date().toISOString(),
-      initialQuantity: formData.initialQuantity,
-    };
-
-    updateItem(updatedItem);
-    toast({
-      title: "Sucesso",
-      description: "Item atualizado com sucesso.",
-    });
-    navigate('/dashboard/inventory');
-  };
-
-  const createItem = () => {
-    const newItem: InventoryItem = {
-      id: uuidv4(),
-      name: formData.name.trim(),
-      category: formData.category,
-      department: formData.department,
-      quantity: formData.quantity,
-      minQuantity: formData.minQuantity,
-      expirationDate: formData.expirationDate,
-      location: formData.location,
-      description: formData.description,
-      isOpen: formData.isOpen,
-      unitPrice: formData.unitPrice,
-      lastUpdated: new Date().toISOString(),
-      initialQuantity: formData.quantity // Adicionando initialQuantity com o valor inicial igual a quantity
-    };
-    
-    return newItem;
-  };
-
-  const addItem2 = () => {
-    const newItem: Omit<InventoryItem, "id" | "lastUpdated"> = {
-      name: formData.name.trim(),
-      category: formData.category,
-      department: formData.department,
-      quantity: formData.quantity,
-      minQuantity: formData.minQuantity,
-      expirationDate: formData.expirationDate,
-      location: formData.location,
-      description: formData.description,
-      isOpen: formData.isOpen,
-      unitPrice: formData.unitPrice,
-      initialQuantity: formData.quantity // Adicionando initialQuantity com o valor inicial igual a quantity
-    };
-    
-    return newItem
+  const goBack = () => {
+    navigate(-1);
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container max-w-2xl mx-auto">
+      <Button 
+        variant="ghost" 
+        onClick={goBack} 
+        className="mb-4 inline-flex items-center text-gray-600 hover:text-gray-800"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Voltar
+      </Button>
+      
       <Card>
         <CardHeader>
-          <CardTitle>{isEditMode ? 'Editar Item do Inventário' : 'Adicionar Item ao Inventário'}</CardTitle>
-          <CardDescription>Preencha os detalhes abaixo para {isEditMode ? 'atualizar' : 'adicionar'} um item ao inventário.</CardDescription>
+          <CardTitle>{id ? 'Editar Item' : 'Adicionar Novo Item'}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Nome do Item</Label>
-              <Input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="category">Categoria</Label>
-              <Select onValueChange={(value) => handleSelectChange('category', value)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione uma categoria" defaultValue={formData.category} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Material de Escritório">Material de Escritório</SelectItem>
-                  <SelectItem value="Eletrônicos">Eletrônicos</SelectItem>
-                  <SelectItem value="Limpeza">Limpeza</SelectItem>
-                  <SelectItem value="Mobiliário">Mobiliário</SelectItem>
-                  <SelectItem value="Manutenção">Manutenção</SelectItem>
-                  <SelectItem value="Médico">Médico</SelectItem>
-                  <SelectItem value="Outros">Outros</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="department">Departamento</Label>
-              <Select onValueChange={(value) => handleSelectChange('department', value)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione um departamento" defaultValue={formData.department} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Administração">Administração</SelectItem>
-                  <SelectItem value="Educação">Educação</SelectItem>
-                  <SelectItem value="Saúde">Saúde</SelectItem>
-                  <SelectItem value="Infraestrutura">Infraestrutura</SelectItem>
-                  <SelectItem value="Serviços Sociais">Serviços Sociais</SelectItem>
-                  <SelectItem value="Finanças">Finanças</SelectItem>
-                  <SelectItem value="Meio Ambiente">Meio Ambiente</SelectItem>
-                  <SelectItem value="Outros">Outros</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="quantity">Quantidade</Label>
-              <Input
-                type="number"
-                id="quantity"
-                name="quantity"
-                value={String(formData.quantity)}
-                onChange={handleChange}
-                required
-                min="1"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="minQuantity">Quantidade Mínima</Label>
-              <Input
-                type="number"
-                id="minQuantity"
-                name="minQuantity"
-                value={String(formData.minQuantity)}
-                onChange={handleChange}
-                required
-                min="1"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label>Data de Expiração</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !date && "text-muted-foreground"
-                    )}
-                  >
-                    {date ? format(date, "dd/MM/yyyy") : <span>Selecione a data</span>}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="center" side="bottom">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    disabled={(date) =>
-                      date < new Date()
-                    }
-                    initialFocus
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium mb-1">Nome</label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium mb-1">Categoria</label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) => handleSelectChange('category', value)}
+                >
+                  <SelectTrigger id="category">
+                    <SelectValue placeholder="Selecione uma categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Papelaria">Papelaria</SelectItem>
+                    <SelectItem value="Escritório">Escritório</SelectItem>
+                    <SelectItem value="Limpeza">Limpeza</SelectItem>
+                    <SelectItem value="Informática">Informática</SelectItem>
+                    <SelectItem value="Móveis">Móveis</SelectItem>
+                    <SelectItem value="Eletrônicos">Eletrônicos</SelectItem>
+                    <SelectItem value="Outros">Outros</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label htmlFor="quantity" className="block text-sm font-medium mb-1">Quantidade</label>
+                <Input
+                  id="quantity"
+                  name="quantity"
+                  type="number"
+                  min="0"
+                  value={formData.quantity}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              
+              {id && (
+                <div>
+                  <label htmlFor="initialQuantity" className="block text-sm font-medium mb-1">Quantidade Inicial</label>
+                  <Input
+                    id="initialQuantity"
+                    name="initialQuantity"
+                    type="number"
+                    min="0"
+                    value={formData.initialQuantity}
+                    onChange={handleInputChange}
+                    required
                   />
-                </PopoverContent>
-              </Popover>
+                </div>
+              )}
+              
+              <div>
+                <label htmlFor="unit" className="block text-sm font-medium mb-1">Unidade</label>
+                <Select
+                  value={formData.unit}
+                  onValueChange={(value) => handleSelectChange('unit', value)}
+                >
+                  <SelectTrigger id="unit">
+                    <SelectValue placeholder="Selecione uma unidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Unidade">Unidade</SelectItem>
+                    <SelectItem value="Caixa">Caixa</SelectItem>
+                    <SelectItem value="Pacote">Pacote</SelectItem>
+                    <SelectItem value="Resma">Resma</SelectItem>
+                    <SelectItem value="Litro">Litro</SelectItem>
+                    <SelectItem value="Metro">Metro</SelectItem>
+                    <SelectItem value="Kg">Kg</SelectItem>
+                    <SelectItem value="Peça">Peça</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label htmlFor="minimumQuantity" className="block text-sm font-medium mb-1">Quantidade Mínima</label>
+                <Input
+                  id="minimumQuantity"
+                  name="minimumQuantity"
+                  type="number"
+                  min="0"
+                  value={formData.minimumQuantity}
+                  onChange={handleInputChange}
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="location" className="block text-sm font-medium mb-1">Localização</label>
+                <Input
+                  id="location"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="acquisitionDate" className="block text-sm font-medium mb-1">Data de Aquisição</label>
+                <Input
+                  id="acquisitionDate"
+                  name="acquisitionDate"
+                  type="date"
+                  value={formData.acquisitionDate}
+                  onChange={handleInputChange}
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="responsible" className="block text-sm font-medium mb-1">Responsável</label>
+                <Input
+                  id="responsible"
+                  name="responsible"
+                  value={formData.responsible}
+                  onChange={handleInputChange}
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="status" className="block text-sm font-medium mb-1">Status</label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => handleSelectChange('status', value)}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="Selecione um status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Disponível">Disponível</SelectItem>
+                    <SelectItem value="Baixo Estoque">Baixo Estoque</SelectItem>
+                    <SelectItem value="Indisponível">Indisponível</SelectItem>
+                    <SelectItem value="Em Manutenção">Em Manutenção</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="location">Localização</Label>
-              <Input
-                type="text"
-                id="location"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="unitPrice">Preço Unitário</Label>
-              <Input
-                type="number"
-                id="unitPrice"
-                name="unitPrice"
-                value={String(formData.unitPrice)}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="description">Descrição</Label>
+            
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium mb-1">Descrição</label>
               <Textarea
                 id="description"
                 name="description"
                 value={formData.description}
-                onChange={handleChange}
+                onChange={handleInputChange}
+                rows={3}
               />
             </div>
-            <Button type="submit">{isEditMode ? 'Atualizar Item' : 'Adicionar Item'}</Button>
-          </form>
-        </CardContent>
+            
+            <div>
+              <label htmlFor="notes" className="block text-sm font-medium mb-1">Observações</label>
+              <Textarea
+                id="notes"
+                name="notes"
+                value={formData.notes}
+                onChange={handleInputChange}
+                rows={2}
+              />
+            </div>
+          </CardContent>
+          
+          <CardFooter>
+            <div className="flex justify-end gap-4 w-full">
+              <Button
+                type="button"
+                variant="outline" 
+                onClick={goBack}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                type="submit"
+                disabled={isSubmitting}
+                className="flex items-center gap-2"
+              >
+                <Save className="h-4 w-4" />
+                {isSubmitting ? 'Salvando...' : 'Salvar'}
+              </Button>
+            </div>
+          </CardFooter>
+        </form>
       </Card>
     </div>
   );

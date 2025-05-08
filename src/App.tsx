@@ -13,6 +13,7 @@ import DashboardLayout from "./components/DashboardLayout";
 import { AuthProvider } from "./contexts/AuthContext";
 import { EmployeeProvider } from "./contexts/EmployeeContext";
 import { InventoryProvider } from "./contexts/InventoryContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import Profile from "./pages/Profile";
 import Protocols from "./pages/Protocols";
 import SalarySimulator from "./pages/SalarySimulator";
@@ -28,48 +29,100 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <EmployeeProvider>
-            <InventoryProvider>
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<Login />} />
-                <Route path="/preparing" element={<PreparingData />} />
-                
-                {/* Dashboard Routes (Protected) */}
-                <Route path="/dashboard" element={<DashboardLayout />}>
-                  <Route index element={<Dashboard />} />
-                  <Route path="employees" element={<EmployeesList />} />
-                  <Route path="employees/new" element={<EmployeeForm />} />
-                  <Route path="protocols" element={<Protocols />} />
-                  <Route path="licitacoes" element={<Licitacoes />} />
-                  <Route path="compras" element={<Compras />} />
-                  <Route path="profile" element={<Profile />} />
-                  <Route path="salary-simulator" element={<SalarySimulator />} />
+    <ThemeProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <EmployeeProvider>
+              <InventoryProvider>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/" element={<Login />} />
+                  <Route path="/preparing" element={<PreparingData />} />
+                  
+                  {/* Dashboard Routes (Protected) */}
+                  <Route path="/dashboard" element={
+                    <DashboardLayout>
+                      <Dashboard />
+                    </DashboardLayout>
+                  } />
+                  <Route path="/dashboard/employees" element={
+                    <DashboardLayout>
+                      <EmployeesList />
+                    </DashboardLayout>
+                  } />
+                  <Route path="/dashboard/employees/new" element={
+                    <DashboardLayout>
+                      <EmployeeForm />
+                    </DashboardLayout>
+                  } />
+                  <Route path="/dashboard/protocols" element={
+                    <DashboardLayout>
+                      <Protocols />
+                    </DashboardLayout>
+                  } />
+                  <Route path="/dashboard/licitacoes" element={
+                    <DashboardLayout>
+                      <Licitacoes />
+                    </DashboardLayout>
+                  } />
+                  <Route path="/dashboard/compras" element={
+                    <DashboardLayout>
+                      <Compras />
+                    </DashboardLayout>
+                  } />
+                  <Route path="/dashboard/profile" element={
+                    <DashboardLayout>
+                      <Profile />
+                    </DashboardLayout>
+                  } />
+                  <Route path="/dashboard/salary-simulator" element={
+                    <DashboardLayout>
+                      <SalarySimulator />
+                    </DashboardLayout>
+                  } />
                   
                   {/* Inventory Routes */}
-                  <Route path="inventory" element={<Inventory />} />
-                  <Route path="inventory/:id" element={<InventoryItemView />} />
-                  <Route path="inventory/new" element={<InventoryForm />} />
-                  <Route path="inventory/edit/:id" element={<InventoryForm />} />
+                  <Route path="/dashboard/inventory" element={
+                    <DashboardLayout>
+                      <Inventory />
+                    </DashboardLayout>
+                  } />
+                  <Route path="/dashboard/inventory/:id" element={
+                    <DashboardLayout>
+                      <InventoryItemView />
+                    </DashboardLayout>
+                  } />
+                  <Route path="/dashboard/inventory/new" element={
+                    <DashboardLayout>
+                      <InventoryForm />
+                    </DashboardLayout>
+                  } />
+                  <Route path="/dashboard/inventory/edit/:id" element={
+                    <DashboardLayout>
+                      <InventoryForm />
+                    </DashboardLayout>
+                  } />
                   
                   {/* Data Management Route */}
-                  <Route path="data-management" element={<DataManagement />} />
-                </Route>
-                
-                {/* Fallback routes */}
-                <Route path="/404" element={<NotFound />} />
-                <Route path="*" element={<Navigate to="/404" />} />
-              </Routes>
-            </InventoryProvider>
-          </EmployeeProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+                  <Route path="/dashboard/data-management" element={
+                    <DashboardLayout>
+                      <DataManagement />
+                    </DashboardLayout>
+                  } />
+                  
+                  {/* Fallback routes */}
+                  <Route path="/404" element={<NotFound />} />
+                  <Route path="*" element={<Navigate to="/404" />} />
+                </Routes>
+              </InventoryProvider>
+            </EmployeeProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

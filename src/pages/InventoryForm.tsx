@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
+import { InventoryCategory, Department } from '@/types/inventory'; // Import the types
 
 const InventoryForm = () => {
   const { id } = useParams();
@@ -26,8 +27,8 @@ const InventoryForm = () => {
 
   const [formData, setFormData] = useState({
     name: '',
-    category: '',
-    department: '',
+    category: '' as InventoryCategory, // Cast as InventoryCategory
+    department: '' as Department, // Cast as Department
     quantity: 0,
     minQuantity: 0,
     expirationDate: '',
@@ -87,6 +88,9 @@ const InventoryForm = () => {
         updateInventoryItem({
           ...formData,
           id,
+          lastUpdated: new Date().toISOString(), // Add missing lastUpdated property
+          category: formData.category as InventoryCategory, // Ensure correct type
+          department: formData.department as Department, // Ensure correct type
           expirationDate: formData.expirationDate ? new Date(formData.expirationDate).toISOString() : null,
         }, user?.name || 'Admin');
         
@@ -97,6 +101,8 @@ const InventoryForm = () => {
       } else {
         addInventoryItem({
           ...formData,
+          category: formData.category as InventoryCategory, // Ensure correct type
+          department: formData.department as Department, // Ensure correct type
           expirationDate: formData.expirationDate ? new Date(formData.expirationDate).toISOString() : null,
           initialQuantity: formData.quantity // Set initial quantity to current quantity for new items
         }, user?.name || 'Admin');

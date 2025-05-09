@@ -9,6 +9,95 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      inventory_history: {
+        Row: {
+          action: string
+          details: string
+          id: string
+          item_id: string
+          timestamp: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          details: string
+          id?: string
+          item_id: string
+          timestamp?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          details?: string
+          id?: string
+          item_id?: string
+          timestamp?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_history_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_items: {
+        Row: {
+          category: string
+          created_at: string
+          department: string
+          description: string | null
+          expiration_date: string | null
+          id: string
+          initial_quantity: number
+          is_open: boolean
+          last_updated: string
+          location: string | null
+          min_quantity: number
+          name: string
+          quantity: number
+          unit_price: number
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          department: string
+          description?: string | null
+          expiration_date?: string | null
+          id?: string
+          initial_quantity?: number
+          is_open?: boolean
+          last_updated?: string
+          location?: string | null
+          min_quantity?: number
+          name: string
+          quantity?: number
+          unit_price?: number
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          department?: string
+          description?: string | null
+          expiration_date?: string | null
+          id?: string
+          initial_quantity?: number
+          is_open?: boolean
+          last_updated?: string
+          location?: string | null
+          min_quantity?: number
+          name?: string
+          quantity?: number
+          unit_price?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       "OUT SISTEM": {
         Row: {
           created_at: string
@@ -21,6 +110,69 @@ export type Database = {
         Update: {
           created_at?: string
           id?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          name?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+        }
+        Relationships: []
+      }
+      protocols: {
+        Row: {
+          address: string
+          cpf: string
+          created_at: string
+          description: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          status: string
+          subject: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          cpf: string
+          created_at?: string
+          description: string
+          email: string
+          id?: string
+          name: string
+          phone: string
+          status?: string
+          subject: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          cpf?: string
+          created_at?: string
+          description?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          status?: string
+          subject?: string
+          user_id?: string
         }
         Relationships: []
       }

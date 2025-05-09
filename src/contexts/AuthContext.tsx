@@ -119,6 +119,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(true);
     
     try {
+      // Create a new profile without going through Supabase signup
+      // First check if a user with this email already exists
+      const { data: existingUser, error: checkError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', email)
+        .maybeSingle();
+        
+      if (existingUser) {
+        throw new Error("Já existe um usuário com este e-mail.");
+      }
+      
+      // Since Supabase signups are disabled, we'll display a message for now
+      toast({
+        variant: "destructive",
+        title: "Cadastro indisponível",
+        description: "No momento, não é possível criar novas contas. Entre em contato com o administrador para obter acesso.",
+      });
+      
+      // Navigate back to login
+      navigate('/');
+      
+      /* 
+      To enable signups in the future, re-enable this code and enable signups in Supabase dashboard:
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -136,10 +161,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         title: "Cadastro iniciado",
         description: "Por favor, verifique seu e-mail para confirmar o cadastro.",
       });
-
-      // Do not auto-login after registration since email confirmation is required
-      // Instead, redirect to a confirmation page or show a message
-      navigate('/');
+      */
       
     } catch (error: any) {
       console.error('Registration error:', error);

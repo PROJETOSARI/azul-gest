@@ -3,10 +3,10 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Session } from '@supabase/supabase-js';
+import type { Session } from '@supabase/supabase-js';
 
 // Define user type
-interface User {
+interface UserData {
   id: string;
   name: string;
   email: string;
@@ -15,11 +15,13 @@ interface User {
 
 // Define context type
 interface AuthContextType {
-  user: User | null;
+  user: UserData | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   register: (name: string, email: string, password: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
   isLoading: boolean;
   isPreparing: boolean;
   finishPreparation: () => void;
@@ -32,6 +34,8 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   logout: () => {},
   register: async () => {},
+  resetPassword: async () => {},
+  updatePassword: async () => {},
   isLoading: false,
   isPreparing: false,
   finishPreparation: () => {},
@@ -42,7 +46,7 @@ export const useAuth = () => useContext(AuthContext);
 
 // Provider component
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserData | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPreparing, setIsPreparing] = useState(false);
@@ -122,35 +126,86 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           data: {
             name,
           },
+          emailRedirectTo: window.location.origin,
         },
       });
       
       if (error) throw error;
       
       toast({
-        title: "Cadastro bem-sucedido",
-        description: "Sua conta foi criada com sucesso!",
+        title: "Cadastro iniciado",
+        description: "Por favor, verifique seu e-mail para confirmar o cadastro.",
       });
+
+      // Do not auto-login after registration since email confirmation is required
+      // Instead, redirect to a confirmation page or show a message
+      navigate('/');
       
-      // Auto-login after registration
-      if (data.user) {
-        setUser({
-          id: data.user.id,
-          name: name || data.user.email?.split('@')[0] || 'User',
-          email: data.user.email || '',
-          role: 'user', // Default role
-        });
-        
-        // Set preparing state
-        setIsPreparing(true);
-        navigate('/preparing');
-      }
     } catch (error: any) {
       console.error('Registration error:', error);
       toast({
         variant: "destructive",
         title: "Falha no cadastro",
         description: error?.message || "Não foi possível criar sua conta.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Reset password function
+  const resetPassword = async (email: string) => {
+    setIsLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Instruções enviadas",
+        description: "Verifique seu e-mail para redefinir sua senha.",
+      });
+      
+    } catch (error: any) {
+      console.error('Reset password error:', error);
+      toast({
+        variant: "destructive",
+        title: "Falha ao enviar instruções",
+        description: error?.message || "Ocorreu um erro ao processar sua solicitação.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Update password function
+  const updatePassword = async (password: string) => {
+    setIsLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password,
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Senha atualizada",
+        description: "Sua senha foi atualizada com sucesso.",
+      });
+      
+      // Redirect to login page after password update
+      navigate('/');
+      
+    } catch (error: any) {
+      console.error('Update password error:', error);
+      toast({
+        variant: "destructive",
+        title: "Falha ao atualizar senha",
+        description: error?.message || "Ocorreu um erro ao processar sua solicitação.",
       });
     } finally {
       setIsLoading(false);
@@ -256,6 +311,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       login, 
       logout,
       register,
+      resetPassword,
+      updatePassword,
       isLoading, 
       isPreparing,
       finishPreparation

@@ -15,7 +15,7 @@ interface UserData {
 interface AuthContextType {
   user: UserData | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: () => Promise<void>;
   logout: () => void;
   register: (name: string, email: string, password: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -59,26 +59,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     navigate('/dashboard');
   };
 
-  // Login function - allows entry without credentials
-  const login = async (email: string, password: string) => {
+  // Login function - no validation needed, direct access
+  const login = async () => {
     setIsLoading(true);
     
     try {
       // Simulate loading time
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Create a mock user - allows entry regardless of credentials
+      // Create a mock user - no validation needed
       const mockUser: UserData = {
         id: '1',
         name: 'Usuário Admin',
-        email: email || 'admin@sistema.com',
+        email: 'admin@sistema.com',
         role: 'admin'
       };
       
       setUser(mockUser);
       
       toast({
-        title: "Login bem-sucedido",
+        title: "Acesso liberado",
         description: "Bem-vindo ao sistema!",
       });
       
@@ -90,7 +90,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.error('Login error:', error);
       toast({
         variant: "destructive",
-        title: "Falha no login",
+        title: "Erro",
         description: "Ocorreu um erro inesperado.",
       });
     } finally {
@@ -106,8 +106,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       await new Promise(resolve => setTimeout(resolve, 500));
       
       toast({
-        title: "Cadastro bem-sucedido",
-        description: "Conta criada com sucesso! Faça login para continuar.",
+        title: "Cadastro realizado",
+        description: "Conta criada com sucesso!",
       });
       
     } catch (error: any) {

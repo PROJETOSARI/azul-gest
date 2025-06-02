@@ -23,16 +23,9 @@ const Login = () => {
     
     try {
       if (mode === 'login') {
-        await login(email, password);
+        // No validation needed - direct access
+        await login();
       } else if (mode === 'register') {
-        if (password.length < 6) {
-          toast({
-            variant: "destructive",
-            title: "Senha muito curta",
-            description: "A senha deve ter pelo menos 6 caracteres.",
-          });
-          return;
-        }
         await register(name, email, password);
       } else if (mode === 'forgot') {
         await resetPassword(email);
@@ -64,10 +57,10 @@ const Login = () => {
 
   const getDescription = () => {
     switch(mode) {
-      case 'login': return "Acesse o sistema com seu e-mail e senha";
+      case 'login': return "Clique em Entrar para acessar o sistema";
       case 'register': return "Crie sua conta para utilizar o sistema";
       case 'forgot': return "Informe seu e-mail para redefinir sua senha";
-      default: return "Acesse o sistema com seu e-mail e senha";
+      default: return "Clique em Entrar para acessar o sistema";
     }
   };
 
@@ -217,21 +210,23 @@ const Login = () => {
                   </AnimatedFormItem>
                 )}
                 
-                <AnimatedFormItem delay={mode === 'login' ? 0 : 0.1}>
-                  <label htmlFor="email" className="sr-only">Email</label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="E-mail"
-                    className="text-base"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    autoFocus={mode === 'login' || mode === 'forgot'}
-                    autoComplete="username"
-                  />
-                </AnimatedFormItem>
+                {mode !== 'login' && (
+                  <AnimatedFormItem delay={mode === 'login' ? 0 : 0.1}>
+                    <label htmlFor="email" className="sr-only">Email</label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="E-mail"
+                      className="text-base"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      autoFocus={mode === 'forgot'}
+                      autoComplete="username"
+                    />
+                  </AnimatedFormItem>
+                )}
                 
-                {mode !== 'forgot' && (
+                {mode !== 'forgot' && mode !== 'login' && (
                   <AnimatedFormItem delay={mode === 'login' ? 0.1 : 0.2}>
                     <label htmlFor="senha" className="sr-only">Senha</label>
                     <Input

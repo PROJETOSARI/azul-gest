@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -201,7 +200,7 @@ const Login = () => {
               initial="initial"
               animate="animate"
             >
-              <CardContent className="space-y-4 pt-2">
+              <CardContent className="space-y-3 pt-2">
                 {mode === 'register' && (
                   <AnimatedFormItem>
                     <label htmlFor="name" className="sr-only">Nome</label>
@@ -227,7 +226,6 @@ const Login = () => {
                     className="text-base"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    required
                     autoFocus={mode === 'login' || mode === 'forgot'}
                     autoComplete="username"
                   />
@@ -243,8 +241,6 @@ const Login = () => {
                       className="text-base"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      required={mode !== 'forgot'}
-                      minLength={6}
                       autoComplete="current-password"
                     />
                   </AnimatedFormItem>
@@ -268,7 +264,7 @@ const Login = () => {
                   </AnimatedFormItem>
                 )}
               </CardContent>
-              <CardFooter className="flex flex-col gap-3 pb-6 pt-1">
+              <CardFooter className="flex flex-col gap-2 pb-6 pt-1">
                 <AnimatedFormItem delay={mode === 'login' ? 0.3 : 0.3}>
                   <Button
                     type="submit"

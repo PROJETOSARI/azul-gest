@@ -95,7 +95,7 @@ const Login = () => {
             initial="initial"
             animate="animate"
           >
-            <CardContent className="space-y-5 pt-2">
+            <CardContent className="space-y-4 pt-2">
               {mode === 'register' && (
                 <AnimatedFormItem>
                   <label htmlFor="name" className="sr-only">Nome</label>
@@ -162,7 +162,7 @@ const Login = () => {
                 </AnimatedFormItem>
               )}
             </CardContent>
-            <CardFooter className="flex flex-col gap-4 pb-6 pt-2">
+            <CardFooter className="flex flex-col gap-3 pb-6 pt-1">
               <AnimatedFormItem delay={mode === 'login' ? 0.3 : 0.3}>
                 <Button
                   type="submit"

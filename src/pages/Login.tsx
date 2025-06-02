@@ -23,11 +23,42 @@ const Login = () => {
     
     try {
       if (mode === 'login') {
-        // No validation needed - direct access
-        await login();
+        if (!email || !password) {
+          toast({
+            variant: "destructive",
+            title: "Campos obrigatórios",
+            description: "Por favor, preencha email e senha.",
+          });
+          return;
+        }
+        await login(email, password);
       } else if (mode === 'register') {
+        if (!name || !email || !password) {
+          toast({
+            variant: "destructive",
+            title: "Campos obrigatórios",
+            description: "Por favor, preencha todos os campos.",
+          });
+          return;
+        }
+        if (password.length < 6) {
+          toast({
+            variant: "destructive",
+            title: "Senha muito curta",
+            description: "A senha deve ter pelo menos 6 caracteres.",
+          });
+          return;
+        }
         await register(name, email, password);
       } else if (mode === 'forgot') {
+        if (!email) {
+          toast({
+            variant: "destructive",
+            title: "Email obrigatório",
+            description: "Por favor, informe seu email.",
+          });
+          return;
+        }
         await resetPassword(email);
       }
     } catch (error) {
@@ -57,10 +88,10 @@ const Login = () => {
 
   const getDescription = () => {
     switch(mode) {
-      case 'login': return "Clique em Entrar para acessar o sistema";
+      case 'login': return "Acesse o sistema com seu email e senha";
       case 'register': return "Crie sua conta para utilizar o sistema";
       case 'forgot': return "Informe seu e-mail para redefinir sua senha";
-      default: return "Clique em Entrar para acessar o sistema";
+      default: return "Acesse o sistema com seu email e senha";
     }
   };
 
@@ -210,24 +241,22 @@ const Login = () => {
                   </AnimatedFormItem>
                 )}
                 
-                {mode !== 'login' && (
-                  <AnimatedFormItem delay={mode === 'login' ? 0 : 0.1}>
-                    <label htmlFor="email" className="sr-only">Email</label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="E-mail"
-                      className="text-base"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      autoFocus={mode === 'forgot'}
-                      autoComplete="username"
-                    />
-                  </AnimatedFormItem>
-                )}
+                <AnimatedFormItem delay={mode === 'register' ? 0.1 : 0}>
+                  <label htmlFor="email" className="sr-only">Email</label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="E-mail"
+                    className="text-base"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoFocus={mode === 'login' || mode === 'forgot'}
+                    autoComplete="username"
+                  />
+                </AnimatedFormItem>
                 
-                {mode !== 'forgot' && mode !== 'login' && (
-                  <AnimatedFormItem delay={mode === 'login' ? 0.1 : 0.2}>
+                {mode !== 'forgot' && (
+                  <AnimatedFormItem delay={mode === 'register' ? 0.2 : 0.1}>
                     <label htmlFor="senha" className="sr-only">Senha</label>
                     <Input
                       id="senha"
@@ -260,7 +289,7 @@ const Login = () => {
                 )}
               </CardContent>
               <CardFooter className="flex flex-col gap-2 pb-6 pt-1">
-                <AnimatedFormItem delay={mode === 'login' ? 0.3 : 0.3}>
+                <AnimatedFormItem delay={0.3}>
                   <Button
                     type="submit"
                     className="w-full h-12 text-base font-semibold rounded-lg flex items-center justify-center gap-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-blue"

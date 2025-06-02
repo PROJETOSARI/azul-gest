@@ -15,7 +15,7 @@ interface UserData {
 interface AuthContextType {
   user: UserData | null;
   isAuthenticated: boolean;
-  login: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   register: (name: string, email: string, password: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -59,38 +59,46 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     navigate('/dashboard');
   };
 
-  // Login function - no validation needed, direct access
-  const login = async () => {
+  // Login function with simple validation
+  const login = async (email: string, password: string) => {
     setIsLoading(true);
     
     try {
       // Simulate loading time
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Create a mock user - no validation needed
-      const mockUser: UserData = {
-        id: '1',
-        name: 'Usuário Admin',
-        email: 'admin@sistema.com',
-        role: 'admin'
-      };
-      
-      setUser(mockUser);
-      
-      toast({
-        title: "Acesso liberado",
-        description: "Bem-vindo ao sistema!",
-      });
-      
-      // Set preparing state instead of redirecting
-      setIsPreparing(true);
-      navigate('/preparing');
+      // Simple validation - accepts admin@gmail.com with password 1234567@
+      if (email === 'admin@gmail.com' && password === '1234567@') {
+        const mockUser: UserData = {
+          id: '1',
+          name: 'Administrador',
+          email: 'admin@gmail.com',
+          role: 'admin'
+        };
+        
+        setUser(mockUser);
+        
+        toast({
+          title: "Login realizado com sucesso",
+          description: "Bem-vindo ao sistema!",
+        });
+        
+        // Set preparing state instead of redirecting
+        setIsPreparing(true);
+        navigate('/preparing');
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Credenciais inválidas",
+          description: "Email ou senha incorretos.",
+        });
+      }
       
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
         variant: "destructive",
-        title: "Erro",
+        title: "Erro no login",
         description: "Ocorreu um erro inesperado.",
       });
     } finally {
@@ -107,7 +115,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       toast({
         title: "Cadastro realizado",
-        description: "Conta criada com sucesso!",
+        description: "Conta criada com sucesso! Faça login para continuar.",
       });
       
     } catch (error: any) {

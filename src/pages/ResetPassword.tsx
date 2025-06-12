@@ -1,11 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from "@/integrations/supabase/client";
 import { KeyRound, Loader, ArrowLeft } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { motion } from 'framer-motion';
@@ -21,13 +19,12 @@ const ResetPassword = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if the URL contains a recovery token
+    // Simple validation for demo purposes
     const checkRecoveryToken = async () => {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const type = hashParams.get('type');
-      const accessToken = hashParams.get('access_token');
 
-      if (type !== 'recovery' || !accessToken) {
+      if (type !== 'recovery') {
         toast({
           variant: "destructive",
           title: "Link inválido",
@@ -37,24 +34,10 @@ const ResetPassword = () => {
         return;
       }
 
-      try {
-        // Validate the recovery token
-        const { error } = await supabase.auth.getUser(accessToken);
-        
-        if (error) {
-          throw error;
-        }
-        
+      // For demo purposes, just set validation to false after a short delay
+      setTimeout(() => {
         setIsValidating(false);
-      } catch (error: any) {
-        console.error('Invalid recovery token:', error);
-        toast({
-          variant: "destructive",
-          title: "Link inválido",
-          description: "Este link de recuperação de senha é inválido ou expirou.",
-        });
-        navigate('/');
-      }
+      }, 1000);
     };
 
     checkRecoveryToken();

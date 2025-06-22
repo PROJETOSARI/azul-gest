@@ -1,6 +1,7 @@
+
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
-import { LogOut, User, Calculator, Users, ClipboardList, FileText, ShoppingCart, ArrowLeft, Package } from 'lucide-react';
+import { LogOut, User, Calculator, ArrowLeft } from 'lucide-react';
 import { Link, useLocation, Navigate, useNavigate, Outlet } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import Footer from './Footer';
@@ -36,36 +37,6 @@ const DashboardLayout = () => {
     {
       name: 'Dashboard',
       path: '/dashboard',
-      icon: <Calculator size={20} />
-    },
-    {
-      name: 'Funcionários',
-      path: '/dashboard/employees',
-      icon: <Users size={20} />
-    },
-    {
-      name: 'Protocolos',
-      path: '/dashboard/protocols',
-      icon: <ClipboardList size={20} />
-    },
-    {
-      name: 'Licitações',
-      path: '/dashboard/licitacoes',
-      icon: <FileText size={20} />
-    },
-    {
-      name: 'Compras',
-      path: '/dashboard/compras',
-      icon: <ShoppingCart size={20} />
-    },
-    {
-      name: 'Almoxarifado',
-      path: '/dashboard/inventory',
-      icon: <Package size={20} />
-    },
-    {
-      name: 'Simulador de Salário',
-      path: '/dashboard/salary-simulator',
       icon: <Calculator size={20} />
     }
   ];

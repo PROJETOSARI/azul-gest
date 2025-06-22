@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { LogOut, User, Calculator, Users, ClipboardList, FileText, ShoppingCart, ArrowLeft, Package } from 'lucide-react';
@@ -113,6 +112,7 @@ const DashboardLayout = () => {
         </Button>
       </div>
 
+      
       <div 
         className={`fixed inset-y-0 left-0 transform lg:relative lg:translate-x-0 z-50
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}

@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
 
@@ -50,6 +50,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Check if a user is logged in on mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('auth-user');
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Error parsing saved user:', error);
+        localStorage.removeItem('auth-user');
+      }
+    }
+  }, []);
+
   // Check if a user is logged in
   const isAuthenticated = !!user;
   
@@ -59,7 +72,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     navigate('/dashboard');
   };
 
-  // Login function with simple validation
+  // Login function - accepts 'teste' with any password
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     
@@ -67,16 +80,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Simulate loading time
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Simple validation - accepts admin@gmail.com with password 1234567@
-      if (email === 'admin@gmail.com' && password === '1234567@') {
+      // Accept 'teste' as email with any password
+      if (email === 'teste') {
         const mockUser: UserData = {
           id: '1',
-          name: 'Administrador',
-          email: 'admin@gmail.com',
+          name: 'Usuário Teste',
+          email: 'teste',
           role: 'admin'
         };
         
         setUser(mockUser);
+        localStorage.setItem('auth-user', JSON.stringify(mockUser));
         
         toast({
           title: "Login realizado com sucesso",
@@ -90,7 +104,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         toast({
           variant: "destructive",
           title: "Credenciais inválidas",
-          description: "Email ou senha incorretos.",
+          description: "Use 'teste' como email.",
         });
       }
       
@@ -184,6 +198,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = () => {
     setUser(null);
     setIsPreparing(false);
+    localStorage.removeItem('auth-user');
     
     toast({
       title: "Sessão encerrada",

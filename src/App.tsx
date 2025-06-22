@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,7 +24,6 @@ import Inventory from "./pages/Inventory";
 import InventoryItemView from "./pages/InventoryItemView";
 import InventoryForm from "./pages/InventoryForm";
 import DataManagement from "./pages/DataManagement";
-import Courses from "./pages/Courses";
 
 const queryClient = new QueryClient();
 
@@ -45,10 +45,6 @@ const App = () => (
                 {/* Dashboard Routes (Protected) */}
                 <Route path="/dashboard" element={<DashboardLayout />}>
                   <Route index element={<Dashboard />} />
-                  
-                  {/* Courses Routes */}
-                  <Route path="courses" element={<Courses />} />
-                  
                   <Route path="employees" element={<EmployeesList />} />
                   <Route path="employees/new" element={<EmployeeForm />} />
                   <Route path="protocols" element={<Protocols />} />

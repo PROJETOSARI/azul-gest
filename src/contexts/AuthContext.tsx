@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
 
@@ -47,38 +47,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPreparing, setIsPreparing] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   // Check if a user is logged in
   const isAuthenticated = !!user;
-
-  // Load user from localStorage on mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const storedPreparing = localStorage.getItem('isPreparing');
-    
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('user');
-      }
-    }
-    
-    if (storedPreparing === 'true') {
-      setIsPreparing(true);
-    }
-    
-    setIsInitialized(true);
-  }, []);
-
+  
   // Function to finish preparation and navigate to dashboard
   const finishPreparation = () => {
     setIsPreparing(false);
-    localStorage.removeItem('isPreparing');
     navigate('/dashboard');
   };
 
@@ -100,7 +77,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         };
         
         setUser(mockUser);
-        localStorage.setItem('user', JSON.stringify(mockUser));
         
         toast({
           title: "Login realizado com sucesso",
@@ -109,7 +85,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         // Set preparing state instead of redirecting
         setIsPreparing(true);
-        localStorage.setItem('isPreparing', 'true');
         navigate('/preparing');
       } else {
         toast({
@@ -209,8 +184,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = () => {
     setUser(null);
     setIsPreparing(false);
-    localStorage.removeItem('user');
-    localStorage.removeItem('isPreparing');
     
     toast({
       title: "Sessão encerrada",
@@ -219,11 +192,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     navigate('/');
   };
-
-  // Don't render children until initialized
-  if (!isInitialized) {
-    return <div>Carregando...</div>;
-  }
 
   return (
     <AuthContext.Provider value={{ 

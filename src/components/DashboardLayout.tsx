@@ -1,7 +1,6 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
-import { LogOut, User, Calculator, Users, ClipboardList, FileText, ShoppingCart, ArrowLeft, Package } from 'lucide-react';
+import { LogOut, User, Calculator, Users, ClipboardList, FileText, ShoppingCart, ArrowLeft, Package, GraduationCap } from 'lucide-react';
 import { Link, useLocation, Navigate, useNavigate, Outlet } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import Footer from './Footer';
@@ -38,6 +37,11 @@ const DashboardLayout = () => {
       name: 'Dashboard',
       path: '/dashboard',
       icon: <Calculator size={20} />
+    },
+    {
+      name: 'Cursos',
+      path: '/dashboard/courses',
+      icon: <GraduationCap size={20} />
     },
     {
       name: 'Funcionários',
@@ -126,7 +130,6 @@ const DashboardLayout = () => {
           <div className="p-4 border-b border-gray-200">
             <div className="flex justify-center items-center h-10">
               {isHovering || isMobileMenuOpen ? (
-                // Logo completa quando o menu está aberto ou em hover
                 <div className="transition-opacity duration-300 ease-in-out flex items-center justify-center">
                   <img
                     src="/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png"
@@ -135,7 +138,6 @@ const DashboardLayout = () => {
                   />
                 </div>
               ) : (
-                // Logo ícone quando o menu está fechado
                 <div className="transition-opacity duration-300 ease-in-out flex items-center justify-center">
                   <img
                     src="/lovable-uploads/9c4a204d-1c51-4b2f-906b-3c317974f925.png"

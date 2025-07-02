@@ -104,7 +104,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         toast({
           variant: "destructive",
           title: "Credenciais inválidas",
-          description: "Use 'teste' como email.",
+          description: "Use 'teste' como email com qualquer senha.",
         });
       }
       
@@ -129,7 +129,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       toast({
         title: "Cadastro realizado",
-        description: "Conta criada com sucesso! Faça login para continuar.",
+        description: "Conta criada com sucesso! Use 'teste' para fazer login.",
       });
       
     } catch (error: any) {
@@ -153,7 +153,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       toast({
         title: "Instruções enviadas",
-        description: "Verifique seu e-mail para redefinir sua senha.",
+        description: "Use 'teste' como email para acessar o sistema.",
       });
       
     } catch (error: any) {

@@ -12,16 +12,9 @@ import NotFound from "./pages/NotFound";
 import DashboardLayout from "./components/DashboardLayout";
 import { AuthProvider } from "./contexts/AuthContext";
 import { EmployeeProvider } from "./contexts/EmployeeContext";
-import { InventoryProvider } from "./contexts/InventoryContext";
 import Profile from "./pages/Profile";
 import Protocols from "./pages/Protocols";
-import SalarySimulator from "./pages/SalarySimulator";
-import Licitacoes from "./pages/Licitacoes";
-import Compras from "./pages/Compras";
 import PreparingData from "./pages/PreparingData";
-import Inventory from "./pages/Inventory";
-import InventoryItemView from "./pages/InventoryItemView";
-import InventoryForm from "./pages/InventoryForm";
 
 const queryClient = new QueryClient();
 
@@ -33,7 +26,6 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <EmployeeProvider>
-            <InventoryProvider>
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<Login />} />
@@ -45,23 +37,13 @@ const App = () => (
                   <Route path="employees" element={<EmployeesList />} />
                   <Route path="employees/new" element={<EmployeeForm />} />
                   <Route path="protocols" element={<Protocols />} />
-                  <Route path="licitacoes" element={<Licitacoes />} />
-                  <Route path="compras" element={<Compras />} />
                   <Route path="profile" element={<Profile />} />
-                  <Route path="salary-simulator" element={<SalarySimulator />} />
-                  
-                  {/* Inventory Routes */}
-                  <Route path="inventory" element={<Inventory />} />
-                  <Route path="inventory/:id" element={<InventoryItemView />} />
-                  <Route path="inventory/new" element={<InventoryForm />} />
-                  <Route path="inventory/edit/:id" element={<InventoryForm />} />
                 </Route>
                 
                 {/* Fallback routes */}
                 <Route path="/404" element={<NotFound />} />
                 <Route path="*" element={<Navigate to="/404" />} />
               </Routes>
-            </InventoryProvider>
           </EmployeeProvider>
         </AuthProvider>
       </BrowserRouter>

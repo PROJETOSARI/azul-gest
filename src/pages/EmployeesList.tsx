@@ -58,13 +58,13 @@ const EmployeesList = () => {
     <div className="animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Funcionários</h1>
-          <p className="text-gray-600">Gerencie os funcionários da empresa</p>
+          <h1 className="text-3xl font-bold text-gray-800">Ferramentas de Protocolo</h1>
+          <p className="text-gray-600">Gerencie e administre ferramentas relacionadas a protocolos</p>
         </div>
         <Link to="/dashboard/employees/new">
           <Button className="mt-4 md:mt-0 gradient-btn">
             <Plus size={16} className="mr-2" />
-            Novo Funcionário
+            Nova Ferramenta
           </Button>
         </Link>
       </div>
@@ -78,7 +78,7 @@ const EmployeesList = () => {
         <CardContent>
           <div className="w-full">
             <Input
-              placeholder="Buscar por nome, cargo ou departamento..."
+              placeholder="Buscar ferramentas..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full"
@@ -89,17 +89,17 @@ const EmployeesList = () => {
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle>Lista de Funcionários</CardTitle>
+          <CardTitle>Lista de Ferramentas</CardTitle>
         </CardHeader>
         <CardContent>
           {filteredEmployees.length === 0 ? (
             <div className="text-center py-8">
               <User className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-              <h3 className="text-lg font-medium text-gray-900">Nenhum funcionário encontrado</h3>
+              <h3 className="text-lg font-medium text-gray-900">Nenhuma ferramenta encontrada</h3>
               <p className="text-gray-500 mb-6">
                 {searchTerm 
                   ? "Tente mudar os termos da busca ou limpar os filtros." 
-                  : "Cadastre um novo funcionário para vê-lo aqui."}
+                  : "Cadastre uma nova ferramenta para vê-la aqui."}
               </p>
               {searchTerm && (
                 <Button variant="outline" onClick={() => setSearchTerm("")}>
@@ -176,7 +176,7 @@ const EmployeesList = () => {
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center justify-between">
-                <span>Detalhes do Funcionário</span>
+                <span>Detalhes da Ferramenta</span>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
@@ -197,7 +197,7 @@ const EmployeesList = () => {
                 </div>
               </DialogTitle>
               <DialogDescription>
-                Informações completas e cálculo de salário
+                Informações completas da ferramenta de protocolo
               </DialogDescription>
             </DialogHeader>
             

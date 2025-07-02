@@ -46,7 +46,6 @@
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
     "date-fns": "^3.6.0",
-    "electron-builder": "^26.0.12",
     "embla-carousel-react": "^8.3.0",
     "framer-motion": "^10.18.0",
     "input-otp": "^1.2.4",

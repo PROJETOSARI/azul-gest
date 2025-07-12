@@ -48,6 +48,11 @@ const DashboardLayout = () => {
       name: 'Protocolos',
       path: '/dashboard/protocols',
       icon: <ClipboardList size={20} />
+    },
+    {
+      name: 'Ouvidoria',
+      path: '/dashboard/ouvidoria',
+      icon: <ClipboardList size={20} />
     }
   ];
 

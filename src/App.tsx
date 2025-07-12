@@ -12,8 +12,10 @@ import NotFound from "./pages/NotFound";
 import DashboardLayout from "./components/DashboardLayout";
 import { AuthProvider } from "./contexts/AuthContext";
 import { EmployeeProvider } from "./contexts/EmployeeContext";
+import { ProtocolProvider } from "./contexts/ProtocolContext";
 import Profile from "./pages/Profile";
-import Protocols from "./pages/Protocols";
+import ProtocolManagement from "./pages/ProtocolManagement";
+import Ouvidoria from "./pages/Ouvidoria";
 import PreparingData from "./pages/PreparingData";
 
 const queryClient = new QueryClient();
@@ -26,6 +28,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <EmployeeProvider>
+            <ProtocolProvider>
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<Login />} />
@@ -36,7 +39,8 @@ const App = () => (
                   <Route index element={<Dashboard />} />
                   <Route path="employees" element={<EmployeesList />} />
                   <Route path="employees/new" element={<EmployeeForm />} />
-                  <Route path="protocols" element={<Protocols />} />
+                  <Route path="protocols" element={<ProtocolManagement />} />
+                  <Route path="ouvidoria" element={<Ouvidoria />} />
                   <Route path="profile" element={<Profile />} />
                 </Route>
                 
@@ -44,6 +48,7 @@ const App = () => (
                 <Route path="/404" element={<NotFound />} />
                 <Route path="*" element={<Navigate to="/404" />} />
               </Routes>
+            </ProtocolProvider>
           </EmployeeProvider>
         </AuthProvider>
       </BrowserRouter>

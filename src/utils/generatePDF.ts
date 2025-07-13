@@ -7,10 +7,11 @@ export const generatePDF = (protocol: Protocol) => {
   
   const getStatusLabel = (status: Protocol["status"]) => {
     switch(status) {
-      case "pending": return "Pendente";
-      case "in_progress": return "Em andamento";
-      case "completed": return "Concluído";
-      case "rejected": return "Rejeitado";
+      case "pendente": return "Pendente";
+      case "em_andamento": return "Em andamento";
+      case "concluido": return "Concluído";
+      case "rejeitado": return "Rejeitado";
+      case "arquivado": return "Arquivado";
       default: return status;
     }
   };

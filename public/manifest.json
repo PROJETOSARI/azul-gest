@@ -1,0 +1,92 @@
+
+{
+  "name": "Azul Gest - Sistema de Protocolo",
+  "short_name": "Azul Gest",
+  "description": "Sistema profissional de protocolo e ouvidoria",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1d1d1d",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "pt-BR",
+  "categories": ["productivity", "business"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Acessar dashboard principal",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Novo Protocolo",
+      "short_name": "Protocolo",
+      "description": "Criar novo protocolo",
+      "url": "/dashboard/protocols",
+      "icons": [
+        {
+          "src": "/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "icons": [
+    {
+      "src": "/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -17,6 +17,8 @@ import Profile from "./pages/Profile";
 import ProtocolManagement from "./pages/ProtocolManagement";
 import Ouvidoria from "./pages/Ouvidoria";
 import PreparingData from "./pages/PreparingData";
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import OfflineIndicator from "./components/OfflineIndicator";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,8 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <PWAInstallPrompt />
+      <OfflineIndicator />
       <BrowserRouter>
         <AuthProvider>
           <EmployeeProvider>

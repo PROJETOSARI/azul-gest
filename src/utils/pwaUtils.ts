@@ -35,8 +35,8 @@ export const requestNotificationPermission = async (): Promise<NotificationPermi
 export const sendNotification = (title: string, options?: NotificationOptions): void => {
   if ('Notification' in window && Notification.permission === 'granted') {
     new Notification(title, {
-      icon: '/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png',
-      badge: '/lovable-uploads/9c4a204d-1c51-4b2f-906b-3c317974f925.png',
+      icon: '/lovable-uploads/0090d326-30f0-4ea6-aeb6-85cbaaf4245d.png',
+      badge: '/lovable-uploads/0090d326-30f0-4ea6-aeb6-85cbaaf4245d.png',
       ...options
     });
   }

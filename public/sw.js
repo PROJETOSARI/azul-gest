@@ -5,8 +5,7 @@ const urlsToCache = [
   '/static/js/bundle.js',
   '/static/css/main.css',
   '/dashboard',
-  '/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png',
-  '/lovable-uploads/9c4a204d-1c51-4b2f-906b-3c317974f925.png'
+  '/lovable-uploads/0090d326-30f0-4ea6-aeb6-85cbaaf4245d.png'
 ];
 
 // Install event
@@ -55,8 +54,8 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('push', (event) => {
   const options = {
     body: event.data ? event.data.text() : 'Nova notificação do Azul Gest',
-    icon: '/lovable-uploads/548e9647-6dbb-4efd-85de-1f3c66260f57.png',
-    badge: '/lovable-uploads/9c4a204d-1c51-4b2f-906b-3c317974f925.png',
+    icon: '/lovable-uploads/0090d326-30f0-4ea6-aeb6-85cbaaf4245d.png',
+    badge: '/lovable-uploads/0090d326-30f0-4ea6-aeb6-85cbaaf4245d.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -66,12 +65,12 @@ self.addEventListener('push', (event) => {
       {
         action: 'explore',
         title: 'Abrir App',
-        icon: '/lovable-uploads/9c4a204d-1c51-4b2f-906b-3c317974f925.png'
+        icon: '/lovable-uploads/0090d326-30f0-4ea6-aeb6-85cbaaf4245d.png'
       },
       {
         action: 'close',
         title: 'Fechar',
-        icon: '/lovable-uploads/9c4a204d-1c51-4b2f-906b-3c317974f925.png'
+        icon: '/lovable-uploads/0090d326-30f0-4ea6-aeb6-85cbaaf4245d.png'
       }
     ]
   };
